@@ -17,11 +17,19 @@
 
 A simple .NET template for new projects.
 
-## Prerequisites 
+## Prerequisites
 
 - [.NET](https://dotnet.microsoft.com/en-us/)
 
-## Usage
+## 🚀 Getting Started
+
+To get started, you can install the package from NuGet.
+
+```bash
+dotnet add package <package-name>
+```
+
+## 📝 Usage
 
 ### Add a solution
 
@@ -58,12 +66,3 @@ dotnet run folder1/folder2/<name-of-project>
 ```sh
 dotnet test
 ```
-
-
-
-
-
-
-
-
-
