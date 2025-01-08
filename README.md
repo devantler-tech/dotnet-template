@@ -6,10 +6,14 @@
 <!-- readme-tree start -->
 ```
 .
-└── .github
-    └── workflows
+├── .github
+│   └── workflows
+├── src
+│   └── Example
+└── tests
+    └── Example.Tests
 
-2 directories
+6 directories
 ```
 <!-- readme-tree end -->
 
