@@ -17,7 +17,7 @@
 └── tests
     └── Example.Tests
 
-6 directories
+7 directories
 ```
 <!-- readme-tree end -->
 
