@@ -4,25 +4,6 @@
 [![Test](https://github.com/devantler-tech/dotnet-template/actions/workflows/test.yaml/badge.svg)](https://github.com/devantler-tech/dotnet-template/actions/workflows/test.yaml)
 [![codecov](https://codecov.io/gh/devantler-tech/dotnet-template/graph/badge.svg?token=RhQPb4fE7z)](https://codecov.io/gh/devantler-tech/dotnet-template)
 
-<details>
-  <summary>Show/hide folder structure</summary>
-
-<!-- readme-tree start -->
-```
-.
-├── .github
-│   └── workflows
-├── src
-│   └── Example
-└── tests
-    └── Example.Tests
-
-7 directories
-```
-<!-- readme-tree end -->
-
-</details>
-
 A simple .NET template for new projects.
 
 ## Prerequisites
