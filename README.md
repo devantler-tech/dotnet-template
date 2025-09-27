@@ -55,5 +55,3 @@ dotnet run folder1/folder2/<name-of-project>
 ```sh
 dotnet test
 ```
-
-Hello from dvt
