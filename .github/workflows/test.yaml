@@ -9,6 +9,6 @@ on:
 
 jobs:
   test:
-    uses: devantler-tech/reusable-workflows/.github/workflows/run-dotnet-tests.yaml@afd34443d79480ef3f114138b558265a21ac8f13 # v2.3.4
+    uses: devantler-tech/reusable-workflows/.github/workflows/run-dotnet-tests.yaml@5a334687e73feec66012e62db518716a8618417a # v3.0.0
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
