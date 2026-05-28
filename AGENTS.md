@@ -2,7 +2,7 @@
 
 ## Project overview
 
-`devantler-tech/dotnet-template` is a minimal .NET template for bootstrapping new .NET projects/libraries. It ships an empty, idiomatic scaffold — a library project plus a matching test project — wired up with the house defaults (nullable enabled, implicit usings, `AnalysisMode=All`, `TreatWarningsAsErrors=true`, XML doc generation) and the standard CI/CD, release, and editor/agent tooling, so a new package can start from a clean, current baseline. Targets `net9.0`; published to NuGet via the shared publish workflow.
+`devantler-tech/dotnet-template` is a minimal .NET template for bootstrapping new .NET projects/libraries. It ships an empty, idiomatic scaffold — a library project plus a matching test project — wired up with the house defaults (nullable enabled, implicit usings, `AnalysisMode=All`, `TreatWarningsAsErrors=true`, XML doc generation) and the standard CI/CD, release, and editor/agent tooling, so a new package can start from a clean, current baseline. Targets `net10.0`; published to NuGet via the shared publish workflow.
 
 ## Repository structure
 
