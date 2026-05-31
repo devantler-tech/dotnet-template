@@ -23,10 +23,10 @@ public class ExampleClassTests
   }
 
   /// <summary>
-  /// Verifies that <see cref="ExampleClass.Add(int, int)"/> treats a negative operand as a subtraction.
+  /// Verifies that <see cref="ExampleClass.Add(int, int)"/> returns the correct sum when one operand is negative.
   /// </summary>
   [Fact]
-  public void Add_NegativeOperand_SubtractsFromTheOther()
+  public void Add_NegativeOperand_ReturnsTheirSum()
   {
     // Arrange
     int augend = 10;
