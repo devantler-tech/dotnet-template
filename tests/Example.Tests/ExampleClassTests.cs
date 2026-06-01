@@ -1,4 +1,4 @@
-﻿namespace Example.Tests;
+namespace Example.Tests;
 
 /// <summary>
 /// Tests for the <see cref="ExampleClass"/> class.

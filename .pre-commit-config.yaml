@@ -1,5 +1,13 @@
-# Pre-commit configuration for automatic .NET code formatting and linting
+# Pre-commit configuration for automatic .NET code formatting
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-repos: []
+repos:
+  - repo: local
+    hooks:
+      - id: dotnet-format
+        name: Format .NET code with dotnet format
+        entry: dotnet format
+        language: system
+        files: '\.cs$'
+        pass_filenames: false
