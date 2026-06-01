@@ -1,4 +1,4 @@
-﻿namespace Example;
+namespace Example;
 
 /// <summary>
 /// An example class that models the house conventions for this template: a single,
