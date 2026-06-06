@@ -32,7 +32,7 @@ These conventions guide the autonomous **Daily AI Assistant** — and any agenti
 
 **Task menu** (light; ≤1 high-value item per run):
 - **Triage** new issues/PRs (label; one insightful comment on the oldest un-commented item).
-- **Dependency/toolchain hygiene:** curate Dependabot/Renovate PRs; keep the toolchain version (.NET SDK) and pinned action versions current and aligned with the house workflows; flag majors.
+- **Dependency/toolchain hygiene:** curate Dependabot PRs; keep the toolchain version (.NET SDK) and pinned action versions current and aligned with the house workflows; flag majors.
 - **CI/workflow health:** keep CI green and tidy (pin/align actions, fix broken/flaky steps, remove dead workflows); red on `main` is top priority.
 - **Scaffold freshness:** the generated project builds & tests on the current toolchain; README/badges accurate; example code idiomatic and minimal.
 - **Maintain your own PRs:** fix CI you caused, resolve conflicts.
