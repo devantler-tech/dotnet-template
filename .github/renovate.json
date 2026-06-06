@@ -5,6 +5,7 @@
     ":disableDependencyDashboard",
     ":semanticCommitTypeAll(fix)"
   ],
+  "minimumReleaseAge": "7 days",
   "github-actions": {
     "enabled": false
   },
@@ -13,5 +14,26 @@
   },
   "patch": {
     "automerge": true
-  }
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "security",
+      "priority/high"
+    ],
+    "minimumReleaseAge": "0 days",
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "description": "Internal devantler-tech dependencies are trusted (our own code) — bump immediately with no release-age cooldown.",
+      "matchPackageNames": [
+        "devantler-tech/**",
+        "github.com/devantler-tech/**",
+        "ghcr.io/devantler-tech/**",
+        "@devantler-tech/**"
+      ],
+      "minimumReleaseAge": "0 days"
+    }
+  ]
 }
