@@ -6,7 +6,7 @@ A minimal, batteries-included .NET template for new projects and libraries. Skip
 
 ## ✨ What's included
 
-- **Idiomatic scaffold** — an [`Example.slnx`](Example.slnx) solution wiring a library project ([`src/Example`](src/Example)) to a matching xUnit test project ([`tests/Example.Tests`](tests/Example.Tests)). A single documented member with tests shows the house testing pattern — rename `Example` to your own name and replace the example with your first type.
+- **Idiomatic scaffold** — an [`Example.slnx`](Example.slnx) solution wiring a library project ([`src/Example`](src/Example)) to a matching xUnit test project ([`tests/Example.Tests`](tests/Example.Tests)). A single documented member with tests shows the house testing pattern; [`scripts/rename-placeholders.sh`](scripts/rename-placeholders.sh) repoints the `Example` scaffold to your own project name in one shot.
 - **House defaults** — every project builds with `Nullable`, `ImplicitUsings`, `AnalysisMode=All`, `EnforceCodeStyleInBuild`, XML documentation generation, and `TreatWarningsAsErrors` enabled, so code-style and analyzer findings are build errors, not warnings. Editor and analyzer rules live in [`.editorconfig`](.editorconfig).
 - **CI/CD** — a required-checks workflow on pull requests and the merge queue ([`ci.yaml`](.github/workflows/ci.yaml)); the .NET build/test validation runs via an org-required reusable workflow enforced by branch rules (run `dotnet build` / `dotnet test` locally before a PR).
 - **Releases & publishing** — merge [Conventional Commits](https://www.conventionalcommits.org/) to `main` and [semantic-release](https://github.com/semantic-release/semantic-release) cuts a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)); that tag then publishes the library to NuGet via the shared [`publish-dotnet-library`](https://github.com/devantler-tech/reusable-workflows) workflow ([`publish.yaml`](.github/workflows/publish.yaml)).
@@ -26,12 +26,15 @@ cd my-project
 
 Or click **Use this template** on the [repository page](https://github.com/devantler-tech/dotnet-template).
 
-Then make it your own — rename the solution, library project, namespace, and test project from `Example` to your project's name, and replace `ExampleClass` with your first type. A clean build and test confirms the scaffold is wired up:
+Then make it your own — run the personalisation script to repoint the scaffold (solution, projects, namespaces, and README references) to your project's name in one shot, then replace the sample `ExampleClass` with your first real type. A clean build and test confirms the scaffold is wired up:
 
 ```bash
+./scripts/rename-placeholders.sh <ProjectName>   # e.g. Widget
 dotnet build
 dotnet test
 ```
+
+Run the script with no argument to derive a PascalCase name from your `origin` GitHub remote. It leaves the **Use this template** links above and the maintenance docs untouched; review the result with `git diff`. (Prefer to rename by hand? Repoint `Example` across the `.slnx`, `src/`, `tests/`, and README references yourself.)
 
 ## 📝 Usage
 
