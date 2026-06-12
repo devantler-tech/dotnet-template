@@ -8,6 +8,9 @@ updates:
     cooldown:
       default-days: 7
       semver-major-days: 14
+      # devantler-tech NuGet packages are our own code — bump now, no cooldown.
+      exclude:
+        - "Devantler.*"
 
   - package-ecosystem: github-actions
     directory: /
