@@ -14,9 +14,8 @@
 #   • README's "Use this template" links (`--template devantler-tech/dotnet-template`
 #     and the `[repository page]` link) name where the template lives — they carry
 #     the `dotnet-template` token, never `Example`, so a rename leaves them intact.
-# It also deliberately leaves the maintenance docs (`AGENTS.md`,
-# `.github/copilot-instructions.md`): those describe template-upkeep conventions,
-# not your code, and are yours to adapt.
+# It also deliberately leaves the maintenance docs (`AGENTS.md`): those describe
+# template-upkeep conventions, not your code, and are yours to adapt.
 #
 # Usage:  scripts/rename-placeholders.sh [ProjectName]
 #   e.g.  scripts/rename-placeholders.sh Widget   ->  Widget.slnx, src/Widget, …
