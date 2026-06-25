@@ -44,12 +44,12 @@ single `go.mod` source, the **TFM has no single source**: `net10.0` is duplicate
 `src/Example/Example.csproj` and `tests/Example.Tests/Example.Tests.csproj` — so a bump
 must update **every** copy in the same PR, with no straggler left to drift.
 
-**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the ruleset-injected `run-dotnet-tests` builds and tests across ubuntu/windows/macos; see *Validation*). Workflows → `actionlint`.
+**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the ruleset-injected `run-dotnet-tests` builds and tests across ubuntu/windows/macos; see *Validation*). The onboarding script has its own end-to-end test, `scripts/rename-placeholders.test.sh` (run it with `sh scripts/rename-placeholders.test.sh`; the template-only `🧱 Validate Scaffold` workflow runs it on every PR). Workflows → `actionlint`.
 
 **Task menu** (light; ≤1 high-value item per run):
 - **Triage** new issues/PRs (label; one insightful comment on the oldest un-commented item).
 - **Dependency/toolchain hygiene:** curate Dependabot PRs; keep the toolchain version (.NET SDK) and pinned action versions current and aligned with the house workflows; flag majors.
 - **CI/workflow health:** keep CI green and tidy (pin/align actions, fix broken/flaky steps, remove dead workflows); red on `main` is top priority.
-- **Scaffold freshness:** the generated project builds & tests on the current toolchain; README/badges accurate; example code idiomatic and minimal.
+- **Scaffold freshness:** the generated project builds & tests on the current toolchain; README/badges accurate; example code idiomatic and minimal. The onboarding rename (`scripts/rename-placeholders.sh`) is pinned by `scripts/rename-placeholders.test.sh` (the `🧱 Validate Scaffold` gate) — keep them in lockstep when either changes.
 - **Toolchain-floor freshness:** on any toolchain bump (or a new .NET GA), re-confirm the `global.json` SDK floor and the `net10.0` TFM still match the *Toolchain-floor policy* above — advance them in lockstep, only when forced — and that every copy of the framework/SDK version (both `*.csproj` and `global.json`) moved together with none left to drift.
 - **Maintain your own PRs:** fix CI you caused, resolve conflicts.

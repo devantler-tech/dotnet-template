@@ -1,0 +1,38 @@
+name: 🧱 Validate Scaffold
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+# Template-repo-only scaffold-integrity gate. scripts/rename-placeholders.sh is
+# the first thing a newcomer runs after `Use this template`; a silent regression
+# in it would ship broken to every project created from this template, and it has
+# no other coverage. This job runs ONLY in the template repo; it no-ops in
+# projects created from it (the guard below is false there), mirroring how
+# release.yaml/publish.yaml run only here. Generated projects delete the
+# onboarding script and validate their own code via the ruleset-injected
+# run-dotnet-tests workflow.
+jobs:
+  validate-scaffold:
+    name: Validate Scaffold
+    if: github.repository == 'devantler-tech/dotnet-template'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout
+    steps:
+      - name: 🔒 Harden runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+      - name: 📥 Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false # read-only job; never pushes
+      - name: 🧰 Set up .NET
+        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
+        with:
+          global-json-file: global.json # track the scaffold's SDK floor
+      - name: 🧱 Validate onboarding (rename-placeholders.sh)
+        run: sh scripts/rename-placeholders.test.sh
