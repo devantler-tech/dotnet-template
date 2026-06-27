@@ -53,7 +53,7 @@ make_copy() {
 # Case 1: guardrails — each must reject, exit non-zero, and mutate nothing.
 # ============================================================================
 work1="$(make_copy)"
-trap 'rm -rf "$work1" "${work2:-}" "${work3:-}"' EXIT
+trap 'rm -rf "$work1" "${work2:-}" "${work3:-}" "${work4:-}" "${work5:-}"' EXIT
 cd "$work1"
 script="./scripts/rename-placeholders.sh"
 
@@ -151,4 +151,39 @@ grep -q "^namespace Acme.Widget;" "src/Acme.Widget/AcmeWidgetClass.cs" ||
 grep -q "class AcmeWidgetClass" "src/Acme.Widget/AcmeWidgetClass.cs" ||
 	fail "type name should drop the dot (AcmeWidgetClass) in the dotted-name case"
 
-echo "PASS: rename-placeholders.sh end-to-end (guardrails + rename + dotted-name type token + upstream-link & AGENTS.md preservation + build/test)"
+# ============================================================================
+# Case 4: NO argument — derive the PascalCase project name from origin's GitHub
+#         remote. This is the script's documented default ("With no argument it
+#         derives a PascalCase name from origin's GitHub repo name") and the awk
+#         segment-split/capitalise logic; every case above passes an explicit
+#         name, so this branch was previously unexercised. make_copy() inits a
+#         git repo with NO remote, so each sub-case adds its own origin.
+# ============================================================================
+# 4a) https remote whose repo name needs PascalCasing, with a doubled separator
+#     and a dot that must collapse to a single token: my--cool.app -> MyCoolApp.
+work4="$(make_copy)"
+cd "$work4"
+git remote add origin "https://github.com/acme/my--cool.app.git"
+"$script" # no argument -> derive from origin
+
+[ -f "MyCoolApp.slnx" ] ||
+	fail "no-arg run should derive MyCoolApp from the https remote (separator/dot collapse)"
+[ -d "src/MyCoolApp" ] ||
+	fail "derived-name source dir missing: src/MyCoolApp"
+grep -q "^namespace MyCoolApp;" "src/MyCoolApp/MyCoolAppClass.cs" ||
+	fail "namespace not repointed to the derived PascalCase name (MyCoolApp)"
+[ -e "Example.slnx" ] &&
+	fail "template original should be gone after a derived rename"
+
+# 4b) scp-style remote (git@github.com:owner/repo.git) derives identically.
+work5="$(make_copy)"
+cd "$work5"
+git remote add origin "git@github.com:acme/widget-svc.git"
+"$script" # no argument -> derive from origin
+
+[ -f "WidgetSvc.slnx" ] ||
+	fail "no-arg run should derive WidgetSvc from the scp-style remote"
+[ -d "src/WidgetSvc" ] ||
+	fail "derived-name source dir missing: src/WidgetSvc"
+
+echo "PASS: rename-placeholders.sh end-to-end (guardrails + rename + dotted-name type token + no-arg remote derivation + upstream-link & AGENTS.md preservation + build/test)"
