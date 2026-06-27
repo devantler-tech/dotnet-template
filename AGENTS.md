@@ -10,7 +10,7 @@
 - `src/Example/` — the library project (`Example.csproj`) with `ExampleClass.cs`.
 - `tests/Example.Tests/` — xUnit test project (`Example.Tests.csproj`, `ExampleClassTests.cs`) using `Microsoft.NET.Test.Sdk`, `coverlet.collector`, and `xunit.runner.visualstudio`.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
-- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `release.yaml`, `sync-labels.yaml`, `todos.yaml`.
+- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `release.yaml`, `sync-labels.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
 - `.pre-commit-config.yaml` — a [pre-commit](https://pre-commit.com) config with a local `dotnet-format` hook that runs `dotnet format` on staged C# changes (opt in with `pre-commit install`); `.releaserc` — semantic-release configuration.
 
 ## Validation
