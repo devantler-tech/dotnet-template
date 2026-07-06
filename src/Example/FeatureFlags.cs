@@ -21,8 +21,11 @@ public static class FeatureFlags
   /// </summary>
   public const string ExampleFeature = "example-feature";
 
-  const string EnabledVariant = "on";
-  const string DisabledVariant = "off";
+  /// <summary>Variant key the in-memory provider resolves to <see langword="true"/> (flag on).</summary>
+  public const string EnabledVariant = "on";
+
+  /// <summary>Variant key the in-memory provider resolves to <see langword="false"/> (flag off).</summary>
+  public const string DisabledVariant = "off";
 
   /// <summary>
   /// Builds an OpenFeature in-memory provider seeding <see cref="ExampleFeature"/>
@@ -50,6 +53,12 @@ public static class FeatureFlags
   /// </summary>
   /// <param name="provider">The provider to register (e.g. from <see cref="CreateInMemoryProvider"/>).</param>
   /// <returns>An OpenFeature client bound to the registered provider.</returns>
+  /// <remarks>
+  /// Call this once during application startup: it re-registers OpenFeature's process-wide
+  /// default provider, and because clients resolve the <em>current</em> provider dynamically,
+  /// a later call silently redirects clients obtained earlier. If you need several independent
+  /// registrations, reach for OpenFeature's domain/named-client API instead of repeated calls.
+  /// </remarks>
   public static async Task<IFeatureClient> CreateClientAsync(FeatureProvider provider)
   {
     ArgumentNullException.ThrowIfNull(provider);

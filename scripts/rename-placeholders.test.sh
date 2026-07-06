@@ -85,6 +85,7 @@ for p in \
 	"Widget.slnx" \
 	"src/Widget/Widget.csproj" \
 	"src/Widget/WidgetClass.cs" \
+	"src/Widget/FeatureFlags.cs" \
 	"tests/Widget.Tests/Widget.Tests.csproj" \
 	"tests/Widget.Tests/WidgetClassTests.cs"; do
 	[ -f "$p" ] || fail "expected renamed file missing: $p"
@@ -98,6 +99,8 @@ done
 #     both checked separately below, so scope this to *.slnx/*.csproj/*.cs).
 grep -q "^namespace Widget;" "src/Widget/WidgetClass.cs" ||
 	fail "namespace not repointed in WidgetClass.cs"
+grep -q "^namespace Widget;" "src/Widget/FeatureFlags.cs" ||
+	fail "namespace not repointed in FeatureFlags.cs"
 grep -qF 'Project Path="src/Widget/Widget.csproj"' "Widget.slnx" ||
 	fail "solution Project Path not repointed in Widget.slnx"
 grep -qF '..\src\Widget\Widget.csproj' "tests/Widget.Tests/Widget.Tests.csproj" ||

@@ -102,11 +102,15 @@ public class ExampleClassTests
   /// <returns>An in-memory provider resolving the example flag to <paramref name="enabled"/>.</returns>
   static InMemoryProvider BuildExampleProvider(bool enabled)
   {
-    string variant = enabled ? "on" : "off";
+    string variant = enabled ? FeatureFlags.EnabledVariant : FeatureFlags.DisabledVariant;
     return new InMemoryProvider(new Dictionary<string, Flag>(StringComparer.Ordinal)
     {
       [FeatureFlags.ExampleFeature] = new Flag<bool>(
-        new Dictionary<string, bool>(StringComparer.Ordinal) { ["on"] = true, ["off"] = false },
+        new Dictionary<string, bool>(StringComparer.Ordinal)
+        {
+          [FeatureFlags.EnabledVariant] = true,
+          [FeatureFlags.DisabledVariant] = false,
+        },
         variant),
     });
   }
