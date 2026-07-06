@@ -7,7 +7,7 @@
 ## Repository structure
 
 - `Example.slnx` — XML-based solution referencing the `src/` and `tests/` projects.
-- `src/Example/` — the library project (`Example.csproj`) with `ExampleClass.cs`.
+- `src/Example/` — the library project (`Example.csproj`) with `ExampleClass.cs` and `FeatureFlags.cs` (the OpenFeature feature-flag scaffold; see *Feature flags*).
 - `tests/Example.Tests/` — xUnit test project (`Example.Tests.csproj`, `ExampleClassTests.cs`) using `Microsoft.NET.Test.Sdk`, `coverlet.collector`, and `xunit.runner.visualstudio`.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
 - `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `release.yaml`, `sync-labels.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
@@ -23,6 +23,15 @@ dotnet test
 ```
 
 Workflow YAML changes should pass `actionlint`.
+
+## Feature flags
+
+New features land **behind a flag, default-off**, are tested in **both** states, and are switched on only after validation — so deploy is decoupled from release and a rollback is a flag flip, not a redeploy. This is the portfolio-wide *feature-flag-first* standard ([devantler-tech/monorepo#2059](https://github.com/devantler-tech/monorepo/issues/2059)).
+
+- **Call sites use [OpenFeature](https://openfeature.dev/)** — the vendor-neutral flag API — via the `FeatureFlags` helper in `src/Example/FeatureFlags.cs`. Code paths evaluate flags through an `IFeatureClient`, never a provider directly, so the backing provider can change without touching them.
+- **The scaffold ships OpenFeature's built-in in-memory provider** (`FeatureFlags.CreateInMemoryProvider`) so the example evaluates with no external backend. Swap it for a real provider when you adopt the template — **[flagd](https://flagd.dev/)** for a GitOps/self-hosted definition source, a hosted service, or the `Microsoft.FeatureManagement` OpenFeature bridge once it ships **GA** (it is preview-only today, so the scaffold does not depend on it — the template avoids preview packages).
+- **Both states are tested.** `ExampleClassTests` exercises the example flag on, off, and unset (defaults off); mirror this for every flag.
+- **Flag lifecycle is mandatory.** Short-lived *release* flags are **removed after rollout** (flag debt is the #1 failure mode); long-lived *ops/permission* flags are the exception. Trivial/mechanical changes are exempt from flagging.
 
 CI **does** verify the scaffold: a repository ruleset (*"Require workflows to pass before merging for .NET"*) injects the shared `run-dotnet-tests.yaml` reusable workflow on every PR and merge-queue entry, which builds and tests the solution across `ubuntu`/`windows`/`macos` (with the GitHub Code Quality coverage upload). The repo's own `ci.yaml` `CI - Required Checks` aggregator (empty `job-results`) is a *separate, trivially-passing* status check — **not** the .NET gate; publishing the NuGet library is handled separately by the reusable publish pipeline on `v*` tags. **Don't wire `run-dotnet-tests` into `ci.yaml`** — it already runs via the ruleset, so adding it would double-run every job. The local commands above are fast feedback, not a substitute for a check CI skips.
 
@@ -50,6 +59,7 @@ must update **every** copy in the same PR, with no straggler left to drift.
 - **Triage** new issues/PRs (label; one insightful comment on the oldest un-commented item).
 - **Dependency/toolchain hygiene:** curate Dependabot PRs; keep the toolchain version (.NET SDK) and pinned action versions current and aligned with the house workflows; flag majors.
 - **CI/workflow health:** keep CI green and tidy (pin/align actions, fix broken/flaky steps, remove dead workflows); red on `main` is top priority.
-- **Scaffold freshness:** the generated project builds & tests on the current toolchain; README/badges accurate; example code idiomatic and minimal. The onboarding rename (`scripts/rename-placeholders.sh`) is pinned by `scripts/rename-placeholders.test.sh` (the `🧱 Validate Scaffold` gate) — keep them in lockstep when either changes.
+- **Scaffold freshness:** the generated project builds & tests on the current toolchain; README/badges accurate; example code idiomatic and minimal. The onboarding rename (`scripts/rename-placeholders.sh`) is pinned by `scripts/rename-placeholders.test.sh` (the `🧱 Validate Scaffold` gate) — keep them in lockstep when either changes (adding a placeholder `.cs` file means adding it to the rename script's substitutions).
+- **Feature-flag hygiene:** keep the OpenFeature scaffold current (see *Feature flags*) — new behaviour gated default-off + tested in both states; when the `Microsoft.FeatureManagement` OpenFeature bridge reaches GA, revisit adopting it as the provider.
 - **Toolchain-floor freshness:** on any toolchain bump (or a new .NET GA), re-confirm the `global.json` SDK floor and the `net10.0` TFM still match the *Toolchain-floor policy* above — advance them in lockstep, only when forced — and that every copy of the framework/SDK version (both `*.csproj` and `global.json`) moved together with none left to drift.
 - **Maintain your own PRs:** fix CI you caused, resolve conflicts.

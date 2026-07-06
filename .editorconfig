@@ -58,3 +58,6 @@ generated_code = true
 
 [**/*Tests.cs]
 dotnet_diagnostic.CA1707.severity = none
+# Test methods must not call ConfigureAwait (xUnit1030), so CA2007's "call
+# ConfigureAwait" would conflict — test projects conventionally disable CA2007.
+dotnet_diagnostic.CA2007.severity = none

@@ -11,4 +11,15 @@
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!--
+    Feature-flag scaffolding (see AGENTS.md § Feature flags). Call sites use the
+    portable, vendor-neutral OpenFeature API. The scaffold ships OpenFeature's
+    built-in in-memory provider so the example evaluates with no backend; swap it
+    for a real provider (flagd for GitOps, the Microsoft.FeatureManagement bridge
+    once it ships GA, …) without touching call sites.
+  -->
+  <ItemGroup>
+    <PackageReference Include="OpenFeature" Version="2.14.0" />
+  </ItemGroup>
+
 </Project>

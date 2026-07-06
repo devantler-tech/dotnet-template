@@ -124,6 +124,9 @@ subst() {
 subst "$new_name.slnx"
 subst "src/$new_name/$new_name.csproj"
 subst "src/$new_name/${type_token}Class.cs"
+# FeatureFlags.cs has no `Example` in its filename, so the directory move above
+# carries it — but its contents (namespace, flag references) still need repointing.
+subst "src/$new_name/FeatureFlags.cs"
 subst "tests/$new_name.Tests/$new_name.Tests.csproj"
 subst "tests/$new_name.Tests/${type_token}ClassTests.cs"
 subst "README.md"
