@@ -6,6 +6,15 @@ namespace Example.Tests;
 /// <summary>
 /// Tests for the <see cref="ExampleClass"/> class.
 /// </summary>
+/// <remarks>
+/// Joins the shared <c>"FeatureFlags"</c> xUnit collection.
+/// <see cref="FeatureFlags.CreateClientAsync(FeatureProvider)"/> re-registers the
+/// process-wide <c>Api.Instance</c> provider, and xUnit runs different test classes in
+/// parallel by default — so give every flag-exercising test class the same
+/// <c>[Collection("FeatureFlags")]</c> attribute and xUnit runs them sequentially,
+/// keeping their provider registrations from interleaving.
+/// </remarks>
+[Collection("FeatureFlags")]
 public class ExampleClassTests
 {
   /// <summary>
