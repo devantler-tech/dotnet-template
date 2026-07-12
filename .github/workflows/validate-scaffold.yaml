@@ -6,14 +6,16 @@ on:
 
 permissions: {}
 
-# Template-repo-only scaffold-integrity gate. scripts/rename-placeholders.sh is
-# the first thing a newcomer runs after `Use this template`; a silent regression
-# in it would ship broken to every project created from this template, and it has
-# no other coverage. This job runs ONLY in the template repo; it no-ops in
-# projects created from it (the guard below is false there), mirroring how
-# release.yaml/publish.yaml run only here. Generated projects delete the
-# onboarding script and validate their own code via the ruleset-injected
-# run-dotnet-tests workflow.
+# Template-repo-only scaffold-integrity gate for two non-.NET surfaces:
+#   * scripts/rename-placeholders.sh — the first thing a newcomer runs after
+#     `Use this template`; a silent regression ships broken to every generated
+#     project.
+#   * CLAUDE.md / GEMINI.md — exact one-line includes of canonical AGENTS.md;
+#     copied guidance would create a second source that silently drifts.
+# This job runs ONLY in the template repo; it no-ops in projects created from it
+# (the guard below is false there), mirroring how release.yaml/publish.yaml run
+# only here. Generated projects delete the onboarding script and validate their
+# own code via the ruleset-injected run-dotnet-tests workflow.
 jobs:
   validate-scaffold:
     name: Validate Scaffold
@@ -30,6 +32,8 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false # read-only job; never pushes
+      - name: 🤖 Validate agent instruction shims
+        run: sh scripts/validate-agent-shims.test.sh
       - name: 🧰 Set up .NET
         uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
         with:
