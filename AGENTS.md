@@ -9,9 +9,12 @@
 - `Example.slnx` — XML-based solution referencing the `src/` and `tests/` projects.
 - `src/Example/` — the library project (`Example.csproj`) with `ExampleClass.cs` and `FeatureFlags.cs` (the OpenFeature feature-flag scaffold; see *Feature flags*).
 - `tests/Example.Tests/` — xUnit test project (`Example.Tests.csproj`, `ExampleClassTests.cs`) using `Microsoft.NET.Test.Sdk`, `coverlet.collector`, and `xunit.runner.visualstudio`.
+- `AGENTS.md` — the canonical, cross-tool project instructions.
+- `CLAUDE.md` / `GEMINI.md` — exact one-line `@AGENTS.md` shims; never copy guidance into them.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
-- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `release.yaml`, `sync-labels.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
+- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the agent shims and scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `release.yaml`, `sync-labels.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
 - `.pre-commit-config.yaml` — a [pre-commit](https://pre-commit.com) config with a local `dotnet-format` hook that runs `dotnet format` on staged C# changes (opt in with `pre-commit install`); `.releaserc` — semantic-release configuration.
+- `scripts/validate-agent-shims.test.sh` — hermetic structural check that both tool-specific shims contain exactly `@AGENTS.md` plus one newline. Run with `sh scripts/validate-agent-shims.test.sh`; CI runs it via `validate-scaffold.yaml`.
 
 ## Validation
 
@@ -23,6 +26,11 @@ dotnet test
 ```
 
 Workflow YAML changes should pass `actionlint`.
+
+The template's non-.NET integrity checks run separately in
+`validate-scaffold.yaml`: `sh scripts/validate-agent-shims.test.sh` and
+`sh scripts/rename-placeholders.test.sh`. Run the matching check locally when
+touching those surfaces; the workflow no-ops in generated projects.
 
 ## Feature flags
 
@@ -53,7 +61,7 @@ single `go.mod` source, the **TFM has no single source**: `net10.0` is duplicate
 `src/Example/Example.csproj` and `tests/Example.Tests/Example.Tests.csproj` — so a bump
 must update **every** copy in the same PR, with no straggler left to drift.
 
-**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the ruleset-injected `run-dotnet-tests` builds and tests across ubuntu/windows/macos; see *Validation*). The onboarding script has its own end-to-end test, `scripts/rename-placeholders.test.sh` (run it with `sh scripts/rename-placeholders.test.sh`; the template-only `🧱 Validate Scaffold` workflow runs it on every PR). Workflows → `actionlint`.
+**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the ruleset-injected `run-dotnet-tests` builds and tests across ubuntu/windows/macos; see *Validation*). The agent shims and onboarding script have focused checks (`sh scripts/validate-agent-shims.test.sh` and `sh scripts/rename-placeholders.test.sh`); the template-only `🧱 Validate Scaffold` workflow runs both on every PR. Workflows → `actionlint`.
 
 **Task menu** (light; ≤1 high-value item per run):
 - **Triage** new issues/PRs (label; one insightful comment on the oldest un-commented item).
