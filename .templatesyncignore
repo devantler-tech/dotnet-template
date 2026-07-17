@@ -1,0 +1,66 @@
+# .templatesyncignore — files an INSTANCE created from this template OWNS.
+#
+# Same syntax as .gitignore. The weekly template-sync workflow
+# (devantler-tech/actions .github/workflows/template-sync.yaml, using
+# AndreasAugustin/actions-template-sync) is skipped in this template repo itself
+# and runs in every instance created from it — opening a PR that brings template
+# changes downstream. It only ever touches files that exist in this template, and
+# it SKIPS anything matched here, so an instance's tailored files are never
+# clobbered by an upstream sync.
+#
+# Everything NOT listed here is TEMPLATE-OWNED shared plumbing kept current in
+# every instance by template-sync — change it upstream in
+# devantler-tech/dotnet-template, never by editing it in an instance.
+# Template-owned plumbing includes the
+# .github/workflows/{ci,publish,release,template-sync,todos,copilot-setup-steps}
+# workflows, the shared configs (.editorconfig, .gitattributes,
+# .pre-commit-config.yaml), and the CLAUDE.md/GEMINI.md shims. (ci.yaml is
+# deliberately template-owned for devantler-tech instances — they all share the
+# same ruleset-injected build/test workflows and this required-checks
+# aggregation, so CI fixes must propagate. An instance OUTSIDE devantler-tech
+# does not inherit those org rulesets and must replace ci.yaml with real
+# build/test jobs — after doing so, add `.github/workflows/ci.yaml` to this
+# file, which the instance owns, so a later sync cannot revert it.)
+
+# --- Identity & docs (instance-specific) ---
+AGENTS.md
+README.md
+LICENSE
+.github/CODEOWNERS
+.claude/skills/maintain/SKILL.md
+
+# --- Release / dependency config the instance tailors ---
+.releaserc
+.gitignore
+.github/dependabot.yaml
+
+# --- Toolchain floor (instance-owned so SDK and TFMs move in lockstep) ---
+# AGENTS.md's toolchain-floor policy requires global.json's SDK floor and every
+# <TargetFramework> to move together. The project trees below are ignored, so a
+# synced global.json bump would move the SDK floor WITHOUT its matching TFMs —
+# a lockstep violation delivered downstream. The instance owns the whole
+# toolchain upgrade instead (the .NET parity to go-template, where the
+# instance-owned go.mod carries the Go toolchain floor).
+global.json
+
+# --- The instance's own solution and code ---
+# The solution, projects, and code are renamed from Example.* by
+# scripts/rename-placeholders.sh at scaffold time and evolve with the instance;
+# a sync must never clobber them — nor re-introduce the template's Example.slnx
+# after the rename. src/ and tests/ are ignored WHOLESALE so a template file
+# added later at a path the instance already uses can never touch instance code.
+Example.slnx
+src/
+tests/
+
+# --- Scaffolding machinery (template-only; dead code in a live instance) ---
+# These run when a NEW repo is created from this template ("use this template"
+# copies everything, so scaffolding still arrives at creation time). A
+# scaffolded instance never runs them again — ignoring them stops template-sync
+# (re-)introducing them downstream, so an instance that deletes them stays clean.
+scripts/rename-placeholders.sh
+scripts/rename-placeholders.test.sh
+.github/workflows/validate-scaffold.yaml
+
+# --- This ignore-list itself (the instance curates its own ownership) ---
+.templatesyncignore

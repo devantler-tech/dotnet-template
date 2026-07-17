@@ -12,7 +12,7 @@
 - `AGENTS.md` — the canonical, cross-tool project instructions.
 - `CLAUDE.md` / `GEMINI.md` — exact one-line `@AGENTS.md` shims; never copy guidance into them.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
-- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the agent shims and scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `release.yaml`, `sync-labels.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
+- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the agent shims and scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `template-sync.yaml` (skipped in this repo; in instances it opens a weekly PR syncing template-owned plumbing, honouring `.templatesyncignore` — see the README's *Staying current* ownership classes), `release.yaml`, `sync-labels.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
 - `.pre-commit-config.yaml` — a [pre-commit](https://pre-commit.com) config with a local `dotnet-format` hook that runs `dotnet format` on staged C# changes (opt in with `pre-commit install`); `.releaserc` — semantic-release configuration.
 - `scripts/validate-agent-shims.test.sh` — hermetic structural check that both tool-specific shims contain exactly `@AGENTS.md` plus one newline. Run with `sh scripts/validate-agent-shims.test.sh`; CI runs it via `validate-scaffold.yaml`.
 

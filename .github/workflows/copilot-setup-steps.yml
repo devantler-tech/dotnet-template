@@ -43,4 +43,8 @@ jobs:
           global-json-file: global.json
 
       - name: 📦 Restore dependencies
-        run: dotnet restore Example.slnx
+        # Bare `dotnet restore` resolves the repo root's single solution file,
+        # so this workflow stays template-owned and placeholder-independent: it
+        # keeps working after an instance renames Example.slnx, and template
+        # syncs can keep propagating hardening/version bumps to it.
+        run: dotnet restore
