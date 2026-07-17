@@ -37,6 +37,34 @@ dotnet test
 
 Run the script with no argument to derive a PascalCase name from your `origin` GitHub remote. It leaves the **Use this template** links above and the maintenance docs untouched; review the result with `git diff`. (Prefer to rename by hand? Repoint `Example` across the `.slnx`, `src/`, `tests/`, and README references yourself.)
 
+## 🔄 Staying current
+
+A weekly **template-sync** workflow opens a PR in your repository whenever this
+template's shared plumbing changes, so instances never drift from the
+portfolio's CI/lint/agent-file conventions. It never touches your code: every
+file falls into one of three ownership classes:
+
+- **Template-owned plumbing** — synced downstream by the weekly PR: the
+  `.github/workflows/` CI/publish/release workflows, the shared configs
+  (`.editorconfig`, `.gitattributes`, `.pre-commit-config.yaml`, `global.json`
+  — the SDK pin propagates so instances stay on the current toolchain), and
+  the `CLAUDE.md`/`GEMINI.md` shims. Change these upstream in the template,
+  never by hand in an instance.
+- **Instance-owned** — listed in [`.templatesyncignore`](.templatesyncignore),
+  never touched by a sync: your solution and code (the `.slnx`, all of `src/`
+  and `tests/`), identity and docs (`README.md`, `AGENTS.md`, `LICENSE`,
+  `CODEOWNERS`), and the configs you tailor (`.releaserc`, `.gitignore`,
+  `dependabot.yaml`).
+- **Scaffold-time-only** — the rename script and the template's own
+  `validate-scaffold.yaml` gate arrive when the repo is created and are ignored
+  by sync afterwards, so you can delete them and they stay gone.
+
+The sync workflow no-ops in this template repository itself. In devantler-tech
+instances it works out of the box (the org provides the `APP_PRIVATE_KEY`
+secret); an instance elsewhere is off by default — opt in by adding an
+`APP_PRIVATE_KEY` secret (a GitHub App key that can open PRs) and setting the
+repository variable `TEMPLATE_SYNC_ENABLED=true`.
+
 ## 📝 Usage
 
 ### Add a project to the solution
