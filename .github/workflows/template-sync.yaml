@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: devantler-tech/actions/.github/workflows/template-sync.yaml@b3783a5148b844b3f1f4011cdc84871ad66348c1 # v13.0.9
+    uses: devantler-tech/actions/.github/workflows/template-sync.yaml@d72ecd5e8b680c2066a490a2b761a8913c454575 # v13.1.3
     with:
       source-repo-path: devantler-tech/dotnet-template
     secrets:
