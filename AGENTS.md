@@ -8,7 +8,7 @@
 
 - `Example.slnx` — XML-based solution referencing the `src/` and `tests/` projects.
 - `src/Example/` — the library project (`Example.csproj`) with `ExampleClass.cs` and `FeatureFlags.cs` (the OpenFeature feature-flag scaffold; see *Feature flags*).
-- `tests/Example.Tests/` — xUnit test project (`Example.Tests.csproj`, `ExampleClassTests.cs`) using `Microsoft.NET.Test.Sdk`, `coverlet.collector`, and `xunit.runner.visualstudio`.
+- `tests/Example.Tests/` — xUnit v3 test project (`Example.Tests.csproj`, `ExampleClassTests.cs`). It runs on Microsoft.Testing.Platform: xUnit v3 4.x needs that runner on the .NET 10 SDK, and `global.json` opts in with `"test": { "runner": "Microsoft.Testing.Platform" }`. It references `Microsoft.Testing.Extensions.CodeCoverage`, so the shared `run-dotnet-tests` workflow collects Cobertura coverage.
 - `AGENTS.md` — the canonical, cross-tool project instructions.
 - `CLAUDE.md` / `GEMINI.md` — exact one-line `@AGENTS.md` shims; never copy guidance into them.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
