@@ -12,7 +12,7 @@ A minimal, batteries-included .NET template for new projects and libraries. Skip
 - **CI/CD** — a required-checks workflow on pull requests and the merge queue ([`ci.yaml`](.github/workflows/ci.yaml)); the .NET build/test validation runs via an org-required reusable workflow enforced by branch rules (run `dotnet build` / `dotnet test` locally before a PR).
 - **Releases & publishing** — merge [Conventional Commits](https://www.conventionalcommits.org/) to `main` and [semantic-release](https://github.com/semantic-release/semantic-release) cuts a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)); that tag then publishes the library to NuGet via the shared [`publish-dotnet-library`](https://github.com/devantler-tech/actions/blob/main/.github/workflows/publish-dotnet-library.yaml) workflow ([`publish.yaml`](.github/workflows/publish.yaml)).
 - **Dependency management** — [Dependabot](https://docs.github.com/code-security/dependabot) keeps dependencies and pinned GitHub Actions current.
-- **Agent-ready** — [`AGENTS.md`](AGENTS.md) conventions and a `.claude/skills/maintain` card so the autonomous Daily AI Assistant (and any agentic tool) can maintain the repo.
+- **Agent-ready** — [`AGENTS.md`](AGENTS.md) conventions and a `.claude/skills/maintain` card so the autonomous Agentic Engineer (and any agentic tool) can maintain the repo.
 
 The target framework is declared in the project files — currently `net10.0` in [`src/Example/Example.csproj`](src/Example/Example.csproj).
 
