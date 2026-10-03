@@ -95,4 +95,12 @@ dotnet test
 
 ## 🤖 Maintenance
 
+The template's CI checks documentation for links to retired repositories using
+the configuration in [retired-repo-links.json](.github/retired-repo-links.json).
+It requires a complete clean scan and verifies that a seeded retired link fails
+in a disposable copy. This gate runs only in the template repository.
+
+Generated projects own their scan configuration and decide when to enable the
+shared validator; template sync preserves their paths and historical exceptions.
+
 This template is maintained by an autonomous AI assistant. The conventions, validation commands, and contribution workflow live in [`AGENTS.md`](AGENTS.md).
