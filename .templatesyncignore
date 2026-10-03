@@ -33,6 +33,8 @@ LICENSE
 .releaserc
 .gitignore
 .github/dependabot.yaml
+# Documentation scan scope and historical exceptions belong to each consumer.
+.github/retired-repo-links.json
 
 # --- Toolchain floor (instance-owned so SDK and TFMs move in lockstep) ---
 # AGENTS.md's toolchain-floor policy requires global.json's SDK floor and every
