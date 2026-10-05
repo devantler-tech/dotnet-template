@@ -1,0 +1,18 @@
+name: 🧪 Trial shared .NET tests (evidence only)
+
+# Temporary, never merged: shows whether the shared .NET test workflow passes on
+# this template on all three operating systems before an organization rule
+# requires it here (devantler-tech/dotnet-template#424).
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  trial:
+    permissions:
+      contents: read
+      packages: read
+      code-quality: write
+    uses: devantler-tech/.github/.github/workflows/run-dotnet-tests.yaml@2f561837958e7a55d2436f5330c7ab03ff494ede # main
