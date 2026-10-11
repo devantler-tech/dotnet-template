@@ -81,11 +81,12 @@ file falls into one of three ownership classes:
   by sync afterwards, so you can delete them and they stay gone.
 
 **Existing projects need a one-time documentation migration.** The sync action
-does not propagate updates to `.templatesyncignore` itself. Before accepting a
-sync that introduces this guide, add the literal line `CONTRIBUTING.md` to your
-project's own ignore file and commit it, preserving your tailored guide. New
-projects created from the updated template already include that entry. Review
-future ownership changes in the consumer's ignore file too.
+does not propagate updates to `.templatesyncignore` itself. Before the sync runs,
+add the literal line `CONTRIBUTING.md` to your project's own ignore file and
+commit it. If a sync PR is already open, restore your tailored guide and commit
+the ignore entry before merging that PR: adding an ignore entry does not undo
+changes already proposed. New projects created from the updated template already
+include that entry. Review future ownership changes in the consumer's ignore file too.
 
 The sync workflow no-ops in this template repository itself. In devantler-tech
 instances it works out of the box (the org provides the App credentials); an

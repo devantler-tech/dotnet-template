@@ -10,8 +10,9 @@ form, not a public issue or PR.
 This guide is for the **upstream template**. Projects generated from it should replace this guide
 with their own process. Newly created projects include `CONTRIBUTING.md` in
 [`.templatesyncignore`](.templatesyncignore). Existing projects must add and commit that entry
-in their own ignore file before accepting a sync that introduces this guide: updates to the
-ignore file itself do not propagate through sync. That consumer-side entry protects your guide.
+in their own ignore file before the sync runs: updates to the ignore file itself do not
+propagate through sync. If a sync PR is already open, restore your tailored guide and commit
+the ignore entry before merging it; the entry does not undo changes already proposed.
 
 ## Make a first upstream change
 
