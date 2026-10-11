@@ -1,6 +1,6 @@
 # .NET Template
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 A minimal, batteries-included .NET template for new projects and libraries. Skip the boilerplate — start from a clean, idiomatic scaffold with the house defaults, linting, CI/CD, releases, and agent tooling already wired up.
 
