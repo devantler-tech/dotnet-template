@@ -8,8 +8,10 @@ stays minimal. Send sensitive vulnerabilities through this repository's private
 form, not a public issue or PR.
 
 This guide is for the **upstream template**. Projects generated from it should replace this guide
-with their own process. [`.templatesyncignore`](.templatesyncignore) makes it instance-owned so
-template sync preserves those instructions.
+with their own process. Newly created projects include `CONTRIBUTING.md` in
+[`.templatesyncignore`](.templatesyncignore). Existing projects must add and commit that entry
+in their own ignore file before accepting a sync that introduces this guide: updates to the
+ignore file itself do not propagate through sync. That consumer-side entry protects your guide.
 
 ## Make a first upstream change
 

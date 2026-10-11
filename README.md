@@ -69,8 +69,9 @@ file falls into one of three ownership classes:
   (`.editorconfig`, `.gitattributes`, `.pre-commit-config.yaml`), and the
   `CLAUDE.md`/`GEMINI.md` shims. Change these upstream in the template,
   never by hand in an instance.
-- **Instance-owned** — listed in [`.templatesyncignore`](.templatesyncignore),
-  never touched by a sync: your solution and code (the `.slnx`, all of `src/`
+- **Instance-owned** — listed in your project's own `.templatesyncignore`,
+  never touched by a sync. The [supplied file](.templatesyncignore) protects
+  your solution and code (the `.slnx`, all of `src/`
   and `tests/`), the toolchain floor (`global.json` — the SDK floor and every
   `<TargetFramework>` must move in lockstep, so the whole upgrade is yours),
   identity and docs (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `LICENSE`, `CODEOWNERS`), and
@@ -78,6 +79,13 @@ file falls into one of three ownership classes:
 - **Scaffold-time-only** — the rename script and the template's own
   `validate-scaffold.yaml` gate arrive when the repo is created and are ignored
   by sync afterwards, so you can delete them and they stay gone.
+
+**Existing projects need a one-time documentation migration.** The sync action
+does not propagate updates to `.templatesyncignore` itself. Before accepting a
+sync that introduces this guide, add the literal line `CONTRIBUTING.md` to your
+project's own ignore file and commit it, preserving your tailored guide. New
+projects created from the updated template already include that entry. Review
+future ownership changes in the consumer's ignore file too.
 
 The sync workflow no-ops in this template repository itself. In devantler-tech
 instances it works out of the box (the org provides the App credentials); an
