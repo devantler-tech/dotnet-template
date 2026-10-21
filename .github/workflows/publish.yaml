@@ -1,16 +1,104 @@
 name: Publish
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag on main created after the local publisher migration (for example v1.2.3)
+        required: true
+        type: string
   push:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
+
+# A tag push and a manual retry for the same release share one publication lane.
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read # Fetch protected release history; this job has no publication key.
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: main # Validate with current migration tooling before selecting the release source.
+      - name: Validate and select release source
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(bash scripts/nuget-release-version.sh "$RELEASE_TAG")
+          source=$(bash scripts/nuget-release-source.sh "$RELEASE_TAG")
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          git checkout --detach "$source"
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Test the released source
+        run: dotnet test --configuration Release
+      - name: Build NuGet packages without publishing credentials
+        shell: bash
+        env:
+          Version: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.24.0
+          "$RUNNER_TEMP/dotnet-releaser/dotnet-releaser" build dotnet-releaser.toml
+      - name: Retain prepared packages
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuget-packages
+          path: |
+            artifacts-dotnet-releaser/*.nupkg
+            artifacts-dotnet-releaser/*.snupkg
+          if-no-files-found: error
+          retention-days: 1
+
   publish:
-    uses: devantler-tech/.github/.github/workflows/publish-dotnet-library.yaml@d633b9a4e3122beda4eed42053dcfb30af59b652 # v7.23.1
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write # Exchange this job's identity for a short-lived NuGet publication key.
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - name: Download prepared packages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages
+          path: packages
+      - name: Set up NuGet transport
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x' # Transport only; no source or project is loaded in this job.
+      - name: Obtain short-lived NuGet credential
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - name: Push prepared NuGet packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$NUGET_API_KEY" || { echo '::error::NuGet login did not issue a temporary key'; exit 1; }
+          dotnet nuget push 'packages/*.nupkg' --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY"
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}

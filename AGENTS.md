@@ -2,7 +2,7 @@
 
 ## Project overview
 
-`devantler-tech/dotnet-template` is a minimal .NET template for bootstrapping new .NET projects/libraries. It ships an empty, idiomatic scaffold — a library project plus a matching test project — wired up with the house defaults (nullable enabled, implicit usings, `AnalysisMode=All`, `TreatWarningsAsErrors=true`, XML doc generation) and the standard CI/CD, release, and editor/agent tooling, so a new package can start from a clean, current baseline. Targets `net10.0`; configured for NuGet publication via the shared publish workflow.
+`devantler-tech/dotnet-template` is a minimal .NET template for bootstrapping new .NET projects/libraries. It ships an empty, idiomatic scaffold — a library project plus a matching test project — wired up with the house defaults (nullable enabled, implicit usings, `AnalysisMode=All`, `TreatWarningsAsErrors=true`, XML doc generation) and the standard CI/CD, release, and editor/agent tooling, so a new package can start from a clean, current baseline. Targets `net10.0`; configured for NuGet publication via its repository-owned publish workflow.
 
 ## Repository structure
 
@@ -12,7 +12,7 @@
 - `AGENTS.md` — the canonical, cross-tool project instructions.
 - `CLAUDE.md` / `GEMINI.md` — exact one-line `@AGENTS.md` shims; never copy guidance into them.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
-- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `validate-scaffold.yaml` (template-repo-only gate that exercises the agent shims and scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags via the reusable `publish-dotnet-library` workflow), `template-sync.yaml` (skipped in this repo; in instances it opens a weekly PR syncing template-owned plumbing, honouring `.templatesyncignore` — see the README's *Staying current* ownership classes), `release.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
+- `.github/workflows/` — `ci.yaml` (required-checks aggregation on PRs/merge queue), `run-dotnet-tests.yaml` (local three-platform build/test), `validate-scaffold.yaml` (template-repo-only gate that exercises the agent shims, workflow contracts and scaffold-rename script — no-ops downstream), `publish.yaml` (publishes the NuGet library on `v*` tags), `template-sync.yaml` (skipped in this repo; in instances it opens a weekly PR syncing template-owned plumbing, honouring `.templatesyncignore` — see the README's *Staying current* ownership classes), `release.yaml`, `todos.yaml`, and `copilot-setup-steps.yml`.
 - `.pre-commit-config.yaml` — a [pre-commit](https://pre-commit.com) config with a local `dotnet-format` hook that runs `dotnet format` on staged C# changes (opt in with `pre-commit install`); `.releaserc` — semantic-release configuration.
 - `scripts/validate-agent-shims.test.sh` — hermetic structural check that both tool-specific shims contain exactly `@AGENTS.md` plus one newline. Run with `sh scripts/validate-agent-shims.test.sh`; CI runs it via `validate-scaffold.yaml`.
 
@@ -41,7 +41,27 @@ New features land **behind a flag, default-off**, are tested in **both** states,
 - **Both states are tested.** `ExampleClassTests` exercises the example flag on, off, and unset (defaults off); mirror this for every flag. Give every flag-exercising test class the same `[Collection("FeatureFlags")]` attribute so xUnit runs them sequentially — otherwise `CreateClientAsync`'s process-wide provider registration races across xUnit's default cross-class parallelism.
 - **Flag lifecycle is mandatory.** Short-lived *release* flags are **removed after rollout** (flag debt is the #1 failure mode); long-lived *ops/permission* flags are the exception. Trivial/mechanical changes are exempt from flagging.
 
-CI **does** verify the scaffold: an organization ruleset (*"Require workflow - .NET template tests"*, declared in `devantler-tech/.github` under `deploy/organization-rulesets/`) requires the shared `run-dotnet-tests.yaml` workflow, taken from that repository's `main`, on every pull request into the default branch; it builds and tests the solution across `ubuntu`/`windows`/`macos` (with the GitHub Code Quality coverage upload). The rule targets this repository only, by id, so a project generated from the template does **not** inherit it and needs its own gate. The repo's own `ci.yaml` `CI - Required Checks` aggregator covers the retired-link documentation check — **not** the .NET gate; publishing the NuGet library is handled separately by the reusable publish pipeline on `v*` tags. **Don't wire `run-dotnet-tests` into `ci.yaml`** — it already runs via the ruleset, so adding it would double-run every job. The local commands above are fast feedback, not a substitute for a check CI skips.
+CI **does** verify the scaffold: the local `run-dotnet-tests.yaml` builds and tests across Ubuntu, Windows and macOS, using the shared pinned .NET action. It is an ordinary workflow, not a single-consumer reusable export, and generated projects receive it too. Publication is likewise a local job in `publish.yaml`; generic release and template-sync workflows remain shared.
+
+**Protected-source cutover (#534):** the existing organization rule still requires the centralized .NET workflow during overlap. Do not remove that source or its protection until the declarative rule points at this repository's reviewed `main` and live enforcement is verified. The local PR-triggered matrix runs alongside it during this bounded migration. `ci.yaml` aggregates the retired-link documentation check, not the .NET gate. Generated projects must configure their own branch protection; copying a workflow does not copy a ruleset.
+
+**NuGet publication:** `dotnet-releaser.toml` targets the library only and explicitly disables
+GitHub publication, which stays owned by semantic-release. The publisher validates a `v`-prefixed
+release tag using current `main` tooling before checking out its source. Both automatic and manual
+runs require the tagged commit to belong to fetched `main` and contain the local publisher migration;
+historical tags predating that migration are explicitly rejected. The tag version passes through
+the SDK's `Version` property. Build and packaging have no publication credentials. A separate job
+downloads only prepared package artifacts, checks out no repository, and exchanges its OIDC identity
+through pinned `NuGet/login` for a temporary key used only by `dotnet nuget push`. Only that clean
+job has `id-token: write`; neither job receives a GitHub release-write token. Generated projects
+must register their NuGet trusted publishing policy for `publish.yaml` and set the `NUGET_USER`
+repository variable. The former long-lived `NUGET_API_KEY` secret is not used.
+The configuration is renamed during onboarding and owned by each generated project afterwards.
+`scripts/nuget-package.test.sh` builds actual stable/prerelease packages with pinned
+dotnet-releaser 0.24.0 and checks delivery bytes in a disposable local feed; it never publishes
+to NuGet.org. Supply `DOTNET_RELEASER_BIN` when running this check locally. The source-eligibility and
+publisher boundary checks run with `bash scripts/nuget-release-source.test.sh` and
+`bash scripts/nuget-publisher.test.sh`; the scaffold gate runs both.
 
 ## Maintenance (autonomous AI assistant)
 
@@ -61,7 +81,7 @@ single `go.mod` source, the **TFM has no single source**: `net10.0` is duplicate
 `src/Example/Example.csproj` and `tests/Example.Tests/Example.Tests.csproj` — so a bump
 must update **every** copy in the same PR, with no straggler left to drift.
 
-**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the ruleset-injected `run-dotnet-tests` builds and tests across ubuntu/windows/macos; see *Validation*). The agent shims and onboarding script have focused checks (`sh scripts/validate-agent-shims.test.sh` and `sh scripts/rename-placeholders.test.sh`); the template-only `🧱 Validate Scaffold` workflow runs both on every PR. Workflows → `actionlint`.
+**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the local .NET workflow builds and tests across Ubuntu/Windows/macOS; see *Validation*). The agent shims, workflow boundaries and onboarding script have focused checks (`sh scripts/validate-agent-shims.test.sh`, `bash scripts/workflow-ownership.test.sh`, `bash scripts/nuget-release-source.test.sh`, `bash scripts/nuget-publisher.test.sh`, `bash scripts/nuget-package.test.sh`, and `sh scripts/rename-placeholders.test.sh`); the template-only `🧱 Validate Scaffold` workflow runs them on every PR. Workflows → `actionlint` (until its permission vocabulary catches up, ignore only `code-quality`).
 
 **Task menu** (light; ≤1 high-value item per run):
 - **Triage** new issues/PRs (label; one insightful comment on the oldest un-commented item).

@@ -6,6 +6,7 @@ bin
 obj
 *.received.*
 **/TestResults/
+artifacts-dotnet-releaser/
 
 # Temporary files
 *.tmp*

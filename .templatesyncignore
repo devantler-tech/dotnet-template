@@ -12,15 +12,13 @@
 # every instance by template-sync — change it upstream in
 # devantler-tech/dotnet-template, never by editing it in an instance.
 # Template-owned plumbing includes the
-# .github/workflows/{ci,publish,release,template-sync,todos,copilot-setup-steps}
+# .github/workflows/{ci,run-dotnet-tests,publish,release,template-sync,todos,copilot-setup-steps}
 # workflows, the shared configs (.editorconfig, .gitattributes,
 # .pre-commit-config.yaml), and the CLAUDE.md/GEMINI.md shims. (ci.yaml is
-# deliberately template-owned for devantler-tech instances — they all share the
-# same ruleset-injected build/test workflows and this required-checks
-# aggregation, so CI fixes must propagate. An instance OUTSIDE devantler-tech
-# does not inherit those org rulesets and must replace ci.yaml with real
-# build/test jobs — after doing so, add `.github/workflows/ci.yaml` to this
-# file, which the instance owns, so a later sync cannot revert it.)
+# deliberately template-owned: every instance receives its local .NET build/test
+# workflow, so CI fixes must propagate. Each instance configures its own branch
+# protection. If an instance tailors a workflow, add its path to this file so
+# a later sync cannot revert it.)
 
 # --- Identity & docs (instance-specific) ---
 AGENTS.md
@@ -32,6 +30,7 @@ LICENSE
 
 # --- Release / dependency config the instance tailors ---
 .releaserc
+dotnet-releaser.toml
 .gitignore
 .github/dependabot.yaml
 # Documentation scan scope and historical exceptions belong to each consumer.

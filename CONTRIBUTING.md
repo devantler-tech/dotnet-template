@@ -53,7 +53,7 @@ sh scripts/rename-placeholders.test.sh
 
 Both commands must exit 0 and print `PASS`. Rename tests work on temporary copies and clean them
 up; your upstream checkout is not renamed. CI runs these plus a complete retired-link scan with
-positive/negative controls and organization-required build/test checks. See
+positive/negative controls and local three-platform build/test checks. See
 [AGENTS.md validation](AGENTS.md#validation) for the full matrix. Workflow edits also need `actionlint`.
 
 ## Submit your change

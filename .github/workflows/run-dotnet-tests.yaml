@@ -1,0 +1,32 @@
+name: Template .NET validation
+
+on:
+  pull_request:
+  merge_group:
+
+permissions: {}
+
+jobs:
+  test:
+    permissions:
+      contents: read # Checkout only; proposed code receives no package credential.
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test .NET solution or project
+        uses: devantler-tech/.github/actions/run-dotnet-tests@0c7b6c3509b73adbc7537e030935bb01987e625b # v7.23.0
+        with:
+          # Both PRs and merge groups execute proposed code. Public scaffold
+          # dependencies need no authenticated restore or coverage-upload token.
+          # The action sets up the pinned SDK before executing any dotnet command.
+          github-token: ""

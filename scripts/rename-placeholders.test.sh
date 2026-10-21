@@ -105,6 +105,9 @@ grep -qF 'Project Path="src/Widget/Widget.csproj"' "Widget.slnx" ||
 	fail "solution Project Path not repointed in Widget.slnx"
 grep -qF '..\src\Widget\Widget.csproj' "tests/Widget.Tests/Widget.Tests.csproj" ||
 	fail "test ProjectReference not repointed to the renamed library"
+publish_project=$(sed -n 's/^project = "\([^"]*\)"$/\1/p' dotnet-releaser.toml)
+[ -n "$publish_project" ] && [ -f "$publish_project" ] ||
+	fail "publication configuration points at a missing library after rename"
 if git grep -qw "$OLD" -- '*.slnx' '*.csproj' '*.cs'; then
 	fail "template name '$OLD' still present in a .slnx/.csproj/.cs file after rename"
 fi

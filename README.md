@@ -6,16 +6,16 @@ A minimal, batteries-included .NET template for new projects and libraries. Skip
 
 It starts as a **library with tests**, not a web app or executable. Your first useful result is a
 passing solution build and test run; there is no application to launch or deploy yet. Generated
-projects outside devantler-tech need their own build/test CI, as [Staying current](#-staying-current)
-explains.
+projects receive the local build/test workflow too; configure branch protection in your repository
+to require it before merging.
 
 ## ✨ What's included
 
 - **Idiomatic scaffold** — an [`Example.slnx`](Example.slnx) solution wiring a library project ([`src/Example`](src/Example)) to a matching xUnit test project ([`tests/Example.Tests`](tests/Example.Tests)). A single documented member with tests shows the house testing pattern; [`scripts/rename-placeholders.sh`](scripts/rename-placeholders.sh) repoints the `Example` scaffold to your own project name in one shot.
 - **House defaults** — every project builds with `Nullable`, `ImplicitUsings`, `AnalysisMode=All`, `EnforceCodeStyleInBuild`, XML documentation generation, and `TreatWarningsAsErrors` enabled, so code-style and analyzer findings are build errors, not warnings. Editor and analyzer rules live in [`.editorconfig`](.editorconfig).
 - **Feature-flag ready** — a portable [OpenFeature](https://openfeature.dev/) scaffold ([`src/Example/FeatureFlags.cs`](src/Example/FeatureFlags.cs)) so new features land **behind a flag, default-off**, are tested in both states, and are switched on only after validation. Ships an in-memory provider (no backend needed); swap in flagd or another provider without touching call sites. See [`AGENTS.md`](AGENTS.md#feature-flags).
-- **CI/CD** — a required-checks workflow on pull requests and the merge queue ([`ci.yaml`](.github/workflows/ci.yaml)); the .NET build/test validation runs via an org-required reusable workflow enforced by branch rules (run `dotnet build` / `dotnet test` locally before a PR).
-- **Release and publishing configuration** — [semantic-release](https://github.com/semantic-release/semantic-release) uses eligible [Conventional Commits](https://www.conventionalcommits.org/) on `main` to decide whether to cut a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)). The [publish workflow](.github/workflows/publish.yaml) is configured to publish the library to NuGet on those tags; App credentials and a NuGet publishing key are maintainer setup, not local-build prerequisites. These workflow definitions alone do not prove that your package is published.
+- **CI/CD** — repository-owned [.NET validation](.github/workflows/run-dotnet-tests.yaml) builds and tests on Ubuntu, Windows and macOS for pull requests and the merge queue; [`ci.yaml`](.github/workflows/ci.yaml) also aggregates template-specific checks. Run `dotnet build` / `dotnet test` locally before a PR.
+- **Release and publishing configuration** — [semantic-release](https://github.com/semantic-release/semantic-release) uses eligible [Conventional Commits](https://www.conventionalcommits.org/) on `main` to decide whether to cut a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)). The local [publish workflow](.github/workflows/publish.yaml) tests that tagged source and publishes version-matched NuGet packages using [the supplied configuration](dotnet-releaser.toml). App credentials and a NuGet publishing key are maintainer setup, not local-build prerequisites. These workflow definitions alone do not prove that your package is published.
 - **Dependency management** — [Dependabot](https://docs.github.com/code-security/dependabot) keeps dependencies and pinned GitHub Actions current.
 - **Agent-ready** — [`AGENTS.md`](AGENTS.md) conventions and a `.claude/skills/maintain` card so the autonomous Agentic Engineer (and any agentic tool) can maintain the repo.
 
@@ -76,27 +76,51 @@ file falls into one of three ownership classes:
   `<TargetFramework>` must move in lockstep, so the whole upgrade is yours),
   identity and docs (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `LICENSE`, `CODEOWNERS`), and
   the configs you tailor (`.releaserc`, `.gitignore`, `dependabot.yaml`).
+  Package configuration (`dotnet-releaser.toml`) is also instance-owned. The rename script
+  updates its project path; tailor your package identity and configure NuGet trusted publishing before
+  publishing. GitHub release creation remains separate, so this NuGet publisher has no GitHub
+  release-write permission. Build and packaging run without the publishing key; a separate runner
+  receives only the prepared packages and pushes them to NuGet. Automatic and manual publication
+  require an existing release tag whose commit belongs to `main` and includes the local publisher
+  migration. Earlier tags are rejected before source selection; create a new release from `main`
+  instead of using this workflow to republish a pre-migration tag.
 - **Scaffold-time-only** — the rename script and the template's own
   `validate-scaffold.yaml` gate arrive when the repo is created and are ignored
   by sync afterwards, so you can delete them and they stay gone.
 
-**Existing projects need a one-time documentation migration.** The sync action
-does not propagate updates to `.templatesyncignore` itself. Before the sync runs,
-add the literal line `CONTRIBUTING.md` to your project's own ignore file and
-commit it. If a sync PR is already open, restore your tailored guide and commit
-the ignore entry before merging that PR: adding an ignore entry does not undo
-changes already proposed. New projects created from the updated template already
-include that entry. Review future ownership changes in the consumer's ignore file too.
+**Existing projects need a one-time migration before accepting these workflow updates.**
+The sync action does not propagate updates to `.templatesyncignore` itself. Add and commit
+the literal lines `CONTRIBUTING.md` and `dotnet-releaser.toml` in your project's own ignore file.
+Keep your tailored contribution guide, and create or update your own publication configuration
+before syncing the new publisher: copy the supplied configuration, then change its `project`
+to your existing library's actual path. Do not rerun the scaffold rename script in an established
+project. For example, a library already renamed to `Widget` uses
+`project = "src/Widget/Widget.csproj"`.
+
+If a sync PR is already open, restore your tailored guide and configuration and commit the
+ignore entries before merging it: adding an ignore entry does not undo changes already proposed.
+Check that the proposed publisher still targets your library and that the two documentation/config
+files remain yours. New projects created from this template already include the ignore entries;
+their first rename updates the configuration path. Review future ownership changes in the
+consumer's ignore file too.
+
+**NuGet publishing setup:** register a trusted publishing policy in the package owner's NuGet
+account for your repository and workflow file `publish.yaml`, then set the repository variable
+`NUGET_USER` to that NuGet profile name. Follow [NuGet's trusted publishing guide](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+to scope the policy to your package publisher. The clean publication job exchanges its GitHub
+identity for a temporary key immediately before pushing. It does not use the former long-lived
+`NUGET_API_KEY` secret. Until the policy and username are configured, publication fails closed;
+ordinary local builds and tests need neither.
 
 The sync workflow no-ops in this template repository itself. In devantler-tech
 instances it works out of the box (the org provides the App credentials); an
 instance elsewhere is off by default — opt in by supplying your own GitHub App
 (one allowed to open PRs in your repository): add its private key as the
 `APP_PRIVATE_KEY` secret, its client ID as the `APP_CLIENT_ID` repository
-variable, and set the repository variable `TEMPLATE_SYNC_ENABLED=true`. Note
-that outside devantler-tech the synced `ci.yaml` is only an empty required-check
-aggregator (the real build/test workflows are injected by devantler-tech org
-rulesets): replace it with your own CI and add `.github/workflows/ci.yaml` to
+variable, and set the repository variable `TEMPLATE_SYNC_ENABLED=true`.
+The local .NET validation workflow runs in generated projects without an organization-injected
+workflow. Branch protection is separate: require its successful result in your repository.
+If you tailor a workflow rather than maintaining it through this template, add its path to
 your `.templatesyncignore` so later syncs preserve your version.
 
 ## 📝 Usage
