@@ -18,6 +18,17 @@ namespace Example.Tests;
 public class ExampleClassTests
 {
   /// <summary>
+  /// Exercises ordinary repository-owned validation during the native gate cutover.
+  /// This temporary validation-only change must not be merged.
+  /// </summary>
+  [Fact]
+  public void NativeAdmissionControl_ValidChange_Passes()
+  {
+    int result = ExampleClass.Add(1, 1);
+    Assert.Equal(2, result);
+  }
+
+  /// <summary>
   /// Verifies that <see cref="ExampleClass.Add(int, int)"/> returns the sum of its two operands.
   /// </summary>
   [Fact]
