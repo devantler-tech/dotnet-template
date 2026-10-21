@@ -15,7 +15,7 @@ permissions: {}
 # This job runs ONLY in the template repo; it no-ops in projects created from it
 # (the guard below is false there), mirroring how release.yaml/publish.yaml run
 # only here. Generated projects delete the onboarding script and validate their
-# own code via the ruleset-injected run-dotnet-tests workflow.
+# own code via the local run-dotnet-tests workflow.
 jobs:
   validate-scaffold:
     name: Validate Scaffold
@@ -34,6 +34,8 @@ jobs:
           persist-credentials: false # read-only job; never pushes
       - name: 🤖 Validate agent instruction shims
         run: sh scripts/validate-agent-shims.test.sh
+      - name: Validate repository-owned workflow contracts
+        run: bash scripts/workflow-ownership.test.sh
       - name: 🧰 Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:

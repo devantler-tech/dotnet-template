@@ -5,12 +5,35 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
-  packages: write
+permissions: {}
 
 jobs:
   publish:
-    uses: devantler-tech/.github/.github/workflows/publish-dotnet-library.yaml@0c7b6c3509b73adbc7537e030935bb01987e625b # v7.23.0
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            9
+            10
+      - name: Publish
+        shell: bash
+        run: |
+          dotnet tool install --global dotnet-releaser --version 0.24.0
+          dotnet-releaser run --nuget-token "${NUGET_API_KEY}" --github-token "${GITHUB_TOKEN}" dotnet-releaser.toml
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

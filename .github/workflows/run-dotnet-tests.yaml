@@ -1,0 +1,75 @@
+name: Template .NET validation
+
+on:
+  pull_request:
+  merge_group:
+
+permissions: {}
+
+jobs:
+  test:
+    permissions:
+      contents: read
+      packages: read
+      code-quality: write
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Snapshot authenticated GitHub Packages source
+        id: github-source-before
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_listing="$(dotnet nuget list source --format Detailed)"
+          github_source_state="$(
+            awk '
+              tolower($0) ~ /^[[:space:]]*[0-9]+\.[[:space:]]+github[[:space:]]+\[(enabled|disabled)\][[:space:]]*$/ {
+                status = $0
+                getline
+                sub(/^[[:space:]]+/, "")
+                print status "|" $0
+                exit
+              }
+            ' <<<"$source_listing"
+          )"
+          echo "state=$github_source_state" >>"$GITHUB_OUTPUT"
+      - name: Test .NET solution or project
+        uses: devantler-tech/.github/actions/run-dotnet-tests@0c7b6c3509b73adbc7537e030935bb01987e625b # v7.23.0
+        with:
+          # PR code never receives a package credential, including same-repo PRs.
+          github-token: ${{ github.event_name != 'pull_request' && secrets.GITHUB_TOKEN || '' }}
+      - name: Verify authenticated GitHub Packages source state is preserved
+        if: github.event_name != 'pull_request'
+        env:
+          BEFORE_STATE: ${{ steps.github-source-before.outputs.state }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_listing="$(dotnet nuget list source --format Detailed)"
+          after_state="$(
+            awk '
+              tolower($0) ~ /^[[:space:]]*[0-9]+\.[[:space:]]+github[[:space:]]+\[(enabled|disabled)\][[:space:]]*$/ {
+                status = $0
+                getline
+                sub(/^[[:space:]]+/, "")
+                print status "|" $0
+                exit
+              }
+            ' <<<"$source_listing"
+          )"
+          if [[ "$after_state" != "$BEFORE_STATE" ]]; then
+            echo "::error::Authenticated restore changed the caller's GitHub Packages source state"
+            exit 1
+          fi
+          echo "Authenticated GitHub Packages source state was preserved"

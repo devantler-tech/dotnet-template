@@ -6,15 +6,15 @@ A minimal, batteries-included .NET template for new projects and libraries. Skip
 
 It starts as a **library with tests**, not a web app or executable. Your first useful result is a
 passing solution build and test run; there is no application to launch or deploy yet. Generated
-projects outside devantler-tech need their own build/test CI, as [Staying current](#-staying-current)
-explains.
+projects receive the local build/test workflow too; configure branch protection in your repository
+to require it before merging.
 
 ## ✨ What's included
 
 - **Idiomatic scaffold** — an [`Example.slnx`](Example.slnx) solution wiring a library project ([`src/Example`](src/Example)) to a matching xUnit test project ([`tests/Example.Tests`](tests/Example.Tests)). A single documented member with tests shows the house testing pattern; [`scripts/rename-placeholders.sh`](scripts/rename-placeholders.sh) repoints the `Example` scaffold to your own project name in one shot.
 - **House defaults** — every project builds with `Nullable`, `ImplicitUsings`, `AnalysisMode=All`, `EnforceCodeStyleInBuild`, XML documentation generation, and `TreatWarningsAsErrors` enabled, so code-style and analyzer findings are build errors, not warnings. Editor and analyzer rules live in [`.editorconfig`](.editorconfig).
 - **Feature-flag ready** — a portable [OpenFeature](https://openfeature.dev/) scaffold ([`src/Example/FeatureFlags.cs`](src/Example/FeatureFlags.cs)) so new features land **behind a flag, default-off**, are tested in both states, and are switched on only after validation. Ships an in-memory provider (no backend needed); swap in flagd or another provider without touching call sites. See [`AGENTS.md`](AGENTS.md#feature-flags).
-- **CI/CD** — a required-checks workflow on pull requests and the merge queue ([`ci.yaml`](.github/workflows/ci.yaml)); the .NET build/test validation runs via an org-required reusable workflow enforced by branch rules (run `dotnet build` / `dotnet test` locally before a PR).
+- **CI/CD** — repository-owned [.NET validation](.github/workflows/run-dotnet-tests.yaml) builds and tests on Ubuntu, Windows and macOS for pull requests and the merge queue; [`ci.yaml`](.github/workflows/ci.yaml) also aggregates template-specific checks. Run `dotnet build` / `dotnet test` locally before a PR.
 - **Release and publishing configuration** — [semantic-release](https://github.com/semantic-release/semantic-release) uses eligible [Conventional Commits](https://www.conventionalcommits.org/) on `main` to decide whether to cut a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)). The [publish workflow](.github/workflows/publish.yaml) is configured to publish the library to NuGet on those tags; App credentials and a NuGet publishing key are maintainer setup, not local-build prerequisites. These workflow definitions alone do not prove that your package is published.
 - **Dependency management** — [Dependabot](https://docs.github.com/code-security/dependabot) keeps dependencies and pinned GitHub Actions current.
 - **Agent-ready** — [`AGENTS.md`](AGENTS.md) conventions and a `.claude/skills/maintain` card so the autonomous Agentic Engineer (and any agentic tool) can maintain the repo.
@@ -93,10 +93,10 @@ instances it works out of the box (the org provides the App credentials); an
 instance elsewhere is off by default — opt in by supplying your own GitHub App
 (one allowed to open PRs in your repository): add its private key as the
 `APP_PRIVATE_KEY` secret, its client ID as the `APP_CLIENT_ID` repository
-variable, and set the repository variable `TEMPLATE_SYNC_ENABLED=true`. Note
-that outside devantler-tech the synced `ci.yaml` is only an empty required-check
-aggregator (the real build/test workflows are injected by devantler-tech org
-rulesets): replace it with your own CI and add `.github/workflows/ci.yaml` to
+variable, and set the repository variable `TEMPLATE_SYNC_ENABLED=true`.
+The local .NET validation workflow runs in generated projects without an organization-injected
+workflow. Branch protection is separate: require its successful result in your repository.
+If you tailor a workflow rather than maintaining it through this template, add its path to
 your `.templatesyncignore` so later syncs preserve your version.
 
 ## 📝 Usage
