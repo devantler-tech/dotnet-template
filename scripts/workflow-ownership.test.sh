@@ -11,14 +11,14 @@ check_validation() {
     (.on | has("pull_request") and has("merge_group") and (has("workflow_call") | not)) and
     .permissions == {} and
     (.jobs.test.strategy.matrix.os | sort) == ["macos-latest", "ubuntu-latest", "windows-latest"] and
-    .jobs.test.permissions.contents == "read" and
-    .jobs.test.permissions.packages == "read" and
-    .jobs.test.permissions["code-quality"] == "write" and
+    .jobs.test.permissions == {"contents":"read"} and
+    ([.jobs.test.steps[] | select(.uses? | strings | startswith("actions/checkout@"))] |
+      length == 1 and .[0].with["persist-credentials"] == false) and
     (.jobs.test | has("uses") | not) and
     ([.jobs.test.steps[] | select(.uses? | strings | startswith("devantler-tech/.github/actions/run-dotnet-tests@"))] | length) == 1 and
     ([.jobs.test.steps[] | select(.uses? | strings | startswith("devantler-tech/.github/actions/run-dotnet-tests@"))][0] |
       (.uses | test("@[0-9a-f]{40}$")) and
-      .with["github-token"] == "${{ github.event_name != '\''pull_request'\'' && secrets.GITHUB_TOKEN || '\'''\'' }}")
+      .with["github-token"] == "")
   ' >/dev/null
 }
 
@@ -28,13 +28,15 @@ check_publisher() {
     .permissions == {} and
     (.jobs.publish | has("uses") | not) and
     .jobs.publish.permissions == {"contents":"read", "packages":"write"} and
+    ([.jobs.publish.steps[] | select(.uses? | strings | startswith("actions/checkout@"))] |
+      length == 1 and .[0].with["persist-credentials"] == false) and
     ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ secrets.NUGET_API_KEY }}" and .env.GITHUB_TOKEN? == "${{ secrets.GITHUB_TOKEN }}")] | length) == 1 and
     ([.jobs.publish.steps[] | select(.run? | strings | contains("dotnet tool install --global dotnet-releaser --version 0.24.0"))] | length) == 1
   ' >/dev/null
 }
 
 check_validation "$root/.github/workflows/run-dotnet-tests.yaml" || {
-  echo 'FAIL: local validation must retain all platforms, read-only checkout and PR token isolation' >&2
+  echo 'FAIL: local validation must retain all platforms, read-only checkout and candidate token isolation' >&2
   exit 1
 }
 check_publisher "$root/.github/workflows/publish.yaml" || {
@@ -46,6 +48,8 @@ check_publisher "$root/.github/workflows/publish.yaml" || {
 for mutation in \
   'del(.jobs.test.strategy.matrix.os[2])' \
   '.jobs.test.permissions.contents = "write"' \
+  '.jobs.test.steps[2].with."github-token" = "credential-fixture"' \
+  'del(.jobs.test.steps[1].with."persist-credentials")' \
   '.jobs.test.steps += [{"uses":"devantler-tech/.github/actions/run-dotnet-tests@main"}]' \
   '.jobs.test.uses = "devantler-tech/.github/.github/workflows/run-dotnet-tests.yaml@main"'; do
   yq "$mutation" "$root/.github/workflows/run-dotnet-tests.yaml" >"$scratch/validation.yaml"
@@ -57,6 +61,7 @@ done
 for mutation in \
   '.permissions.contents = "write"' \
   '.jobs.publish.uses = "devantler-tech/.github/.github/workflows/publish-dotnet-library.yaml@main"' \
+  'del(.jobs.publish.steps[1].with."persist-credentials")' \
   '(.jobs.publish.steps[] | select(.env.NUGET_API_KEY)).env.NUGET_API_KEY = "wrong-secret"'; do
   yq "$mutation" "$root/.github/workflows/publish.yaml" >"$scratch/publisher.yaml"
   if check_publisher "$scratch/publisher.yaml"; then
