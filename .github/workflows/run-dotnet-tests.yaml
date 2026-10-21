@@ -8,6 +8,7 @@ permissions: {}
 
 jobs:
   test:
+    name: .NET template tests (${{ matrix.os }})
     permissions:
       contents: read # Checkout only; proposed code receives no package credential.
     strategy:
