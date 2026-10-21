@@ -12,7 +12,6 @@
     <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
