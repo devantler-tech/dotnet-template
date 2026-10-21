@@ -8,7 +8,7 @@
 
 - `Example.slnx` — XML-based solution referencing the `src/` and `tests/` projects.
 - `src/Example/` — the library project (`Example.csproj`) with `ExampleClass.cs` and `FeatureFlags.cs` (the OpenFeature feature-flag scaffold; see *Feature flags*).
-- `tests/Example.Tests/` — xUnit v3 test project (`Example.Tests.csproj`, `ExampleClassTests.cs`). It runs on Microsoft.Testing.Platform: xUnit v3 4.x needs that runner on the .NET 10 SDK, and `global.json` opts in with `"test": { "runner": "Microsoft.Testing.Platform" }`. It references `Microsoft.Testing.Extensions.CodeCoverage`, so the shared `run-dotnet-tests` workflow collects Cobertura coverage.
+- `tests/Example.Tests/` — xUnit v3 test project (`Example.Tests.csproj`, `ExampleClassTests.cs`). It runs on Microsoft.Testing.Platform: xUnit v3 4.x needs that runner on the .NET 10 SDK, and `global.json` opts in with `"test": { "runner": "Microsoft.Testing.Platform" }`. It references `Microsoft.Testing.Extensions.CodeCoverage`, so the shared `run-dotnet-tests` action collects Cobertura coverage.
 - `AGENTS.md` — the canonical, cross-tool project instructions.
 - `CLAUDE.md` / `GEMINI.md` — exact one-line `@AGENTS.md` shims; never copy guidance into them.
 - `.editorconfig` — formatting and analyzer rules enforced at build.
@@ -43,14 +43,14 @@ New features land **behind a flag, default-off**, are tested in **both** states,
 
 CI **does** verify the scaffold: the local `run-dotnet-tests.yaml` builds and tests across Ubuntu, Windows and macOS, using the shared pinned .NET action. It is an ordinary workflow, not a single-consumer reusable export, and generated projects receive it too. Publication is likewise a local job in `publish.yaml`; generic release and template-sync workflows remain shared.
 
-**Validation ownership cutover (#534):** the existing organization rule still requires the
-centralized .NET workflow during overlap. The local matrix uses distinct `.NET template tests
-(<runner>)` check names so an old organization-injected `test (<runner>)` result cannot satisfy
-the new repository-scoped rule accidentally. Retire the old rule only after the repository rule
-is live and native positive/refusal controls pass. `ci.yaml` aggregates the retired-link
-documentation check, not the .NET gate. Generated projects must configure their own branch
-protection; copying a workflow does not copy a ruleset. A producer binding is not immutable
-workflow-source authentication.
+**Required validation:** the repository ruleset requires `.NET template tests (ubuntu-latest)`,
+`.NET template tests (windows-latest)` and `.NET template tests (macos-latest)` from GitHub Actions
+on the default branch, without bypasses. The former template-only organization rule is retired
+after native positive and intentional-failure controls. Keep this product-specific matrix local
+and reuse the shared action at step level. `ci.yaml` aggregates the retired-link documentation
+check, not the .NET gate; its success does not replace the three platform checks. Generated
+projects must configure all three required checks and their aggregate themselves: copying a
+workflow does not copy a ruleset. A producer binding is not immutable workflow-source authentication.
 
 **NuGet publication:** `dotnet-releaser.toml` targets the library only and explicitly disables
 GitHub publication, which stays owned by semantic-release. The publisher validates a `v`-prefixed

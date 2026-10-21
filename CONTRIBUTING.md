@@ -56,6 +56,11 @@ up; your upstream checkout is not renamed. CI runs these plus a complete retired
 positive/negative controls and local three-platform build/test checks. See
 [AGENTS.md validation](AGENTS.md#validation) for the full matrix. Workflow edits also need `actionlint`.
 
+Expect `.NET template tests (ubuntu-latest)`, `.NET template tests (windows-latest)` and
+`.NET template tests (macos-latest)` as separate required checks, in addition to `CI - Required Checks`
+and the shared cross-repository checks. The aggregate alone does not prove the .NET matrix passed.
+Generated projects must configure these requirements in their own branch protection or ruleset.
+
 ## Submit your change
 
 Review the diff, configure commit signing and stage explicit changed paths. For a README edit:
