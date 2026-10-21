@@ -122,7 +122,7 @@ The local .NET validation workflow runs in generated projects without an organiz
 workflow. Branch protection is separate: require `.NET template tests (ubuntu-latest)`,
 `.NET template tests (windows-latest)`, `.NET template tests (macos-latest)` and
 `CI - Required Checks` in your repository's ruleset or branch protection. The aggregate covers
-the other template checks; it does not replace the three .NET results. Generated repositories
+the retired-link validation check; it does not replace the three .NET results. Generated repositories
 do not inherit this template's ruleset, and local build/test needs no publishing credentials.
 If you tailor a workflow rather than maintaining it through this template, add its path to
 your `.templatesyncignore` so later syncs preserve your version.
