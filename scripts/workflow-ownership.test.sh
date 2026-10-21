@@ -26,6 +26,7 @@ check_publisher() {
   yq -o=json '.' "$1" | jq -e '
     (.on | has("workflow_dispatch") and (.push.tags == ["v*"]) and (has("workflow_call") | not)) and
     .permissions == {} and
+    .concurrency == {"group":"${{ github.workflow }}-${{ inputs.tag || github.ref_name }}", "cancel-in-progress":false} and
     (.jobs.publish | has("uses") | not) and
     .jobs.package.permissions == {"contents":"read"} and
     .jobs.publish.permissions == {"id-token":"write"} and
@@ -50,28 +51,39 @@ check_publisher "$root/.github/workflows/publish.yaml" || {
 }
 
 # Missing platforms, credential widening and a remote job must not satisfy the contract.
-for mutation in \
-  'del(.jobs.test.strategy.matrix.os[2])' \
-  '.jobs.test.permissions.contents = "write"' \
-  '.jobs.test.steps[2].with."github-token" = "credential-fixture"' \
-  'del(.jobs.test.steps[1].with."persist-credentials")' \
-  '.jobs.test.steps += [{"uses":"devantler-tech/.github/actions/run-dotnet-tests@main"}]' \
-  '.jobs.test.uses = "devantler-tech/.github/.github/workflows/run-dotnet-tests.yaml@main"'; do
-  yq "$mutation" "$root/.github/workflows/run-dotnet-tests.yaml" >"$scratch/validation.yaml"
-  if check_validation "$scratch/validation.yaml"; then
-    echo "FAIL: validation accepted unsafe mutation: $mutation" >&2
-    exit 1
-  fi
+# An unrelated new step must not turn a negative control into a no-op.
+for preparation in '.' '.jobs.test.steps = [{"name":"Additional preparation", "run":"true"}] + .jobs.test.steps'; do
+  yq "$preparation" "$root/.github/workflows/run-dotnet-tests.yaml" >"$scratch/validation-base.yaml"
+  check_validation "$scratch/validation-base.yaml"
+  for mutation in \
+    'del(.jobs.test.strategy.matrix.os[2])' \
+    '.jobs.test.permissions.contents = "write"' \
+    '(.jobs.test.steps[] | select(.uses | test("^devantler-tech/\\.github/actions/run-dotnet-tests@"))).with."github-token" = "credential-fixture"' \
+    'del(.jobs.test.steps[] | select(.uses | test("^actions/checkout@")).with."persist-credentials")' \
+    '.jobs.test.steps += [{"uses":"devantler-tech/.github/actions/run-dotnet-tests@main"}]' \
+    '.jobs.test.uses = "devantler-tech/.github/.github/workflows/run-dotnet-tests.yaml@main"'; do
+    yq "$mutation" "$scratch/validation-base.yaml" >"$scratch/validation.yaml"
+    if check_validation "$scratch/validation.yaml"; then
+      echo "FAIL: validation accepted unsafe mutation: $mutation" >&2
+      exit 1
+    fi
+  done
 done
-for mutation in \
-  '.permissions.contents = "write"' \
-  '.jobs.publish.uses = "devantler-tech/.github/.github/workflows/publish-dotnet-library.yaml@main"' \
-  'del(.jobs.package.steps[1].with."persist-credentials")' \
-  '(.jobs.publish.steps[] | select(.env.NUGET_API_KEY)).env.NUGET_API_KEY = "wrong-secret"'; do
-  yq "$mutation" "$root/.github/workflows/publish.yaml" >"$scratch/publisher.yaml"
-  if check_publisher "$scratch/publisher.yaml"; then
-    echo "FAIL: publication accepted unsafe mutation: $mutation" >&2
-    exit 1
-  fi
+for preparation in '.' '.jobs.package.steps = [{"name":"Additional preparation", "run":"true"}] + .jobs.package.steps'; do
+  yq "$preparation" "$root/.github/workflows/publish.yaml" >"$scratch/publisher-base.yaml"
+  check_publisher "$scratch/publisher-base.yaml"
+  for mutation in \
+    'del(.concurrency)' \
+    '.concurrency."cancel-in-progress" = true' \
+    '.permissions.contents = "write"' \
+    '.jobs.publish.uses = "devantler-tech/.github/.github/workflows/publish-dotnet-library.yaml@main"' \
+    'del(.jobs.package.steps[] | select(.uses | test("^actions/checkout@")).with."persist-credentials")' \
+    '(.jobs.publish.steps[] | select(.env.NUGET_API_KEY)).env.NUGET_API_KEY = "wrong-secret"'; do
+    yq "$mutation" "$scratch/publisher-base.yaml" >"$scratch/publisher.yaml"
+    if check_publisher "$scratch/publisher.yaml"; then
+      echo "FAIL: publication accepted unsafe mutation: $mutation" >&2
+      exit 1
+    fi
+  done
 done
 echo 'PASS: repository-owned .NET workflow boundaries and negative controls'

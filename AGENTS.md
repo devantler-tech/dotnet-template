@@ -81,7 +81,7 @@ single `go.mod` source, the **TFM has no single source**: `net10.0` is duplicate
 `src/Example/Example.csproj` and `tests/Example.Tests/Example.Tests.csproj` — so a bump
 must update **every** copy in the same PR, with no straggler left to drift.
 
-**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the local .NET workflow builds and tests across Ubuntu/Windows/macOS; see *Validation*). The agent shims, workflow boundaries and onboarding script have focused checks (`sh scripts/validate-agent-shims.test.sh`, `bash scripts/workflow-ownership.test.sh`, and `sh scripts/rename-placeholders.test.sh`); the template-only `🧱 Validate Scaffold` workflow runs them on every PR. Workflows → `actionlint` (until its permission vocabulary catches up, ignore only `code-quality`).
+**Validate before any PR (locally):** `dotnet build` then `dotnet test` for fast feedback — CI verifies the scaffold too (the local .NET workflow builds and tests across Ubuntu/Windows/macOS; see *Validation*). The agent shims, workflow boundaries and onboarding script have focused checks (`sh scripts/validate-agent-shims.test.sh`, `bash scripts/workflow-ownership.test.sh`, `bash scripts/nuget-release-source.test.sh`, `bash scripts/nuget-publisher.test.sh`, `bash scripts/nuget-package.test.sh`, and `sh scripts/rename-placeholders.test.sh`); the template-only `🧱 Validate Scaffold` workflow runs them on every PR. Workflows → `actionlint` (until its permission vocabulary catches up, ignore only `code-quality`).
 
 **Task menu** (light; ≤1 high-value item per run):
 - **Triage** new issues/PRs (label; one insightful comment on the oldest un-commented item).

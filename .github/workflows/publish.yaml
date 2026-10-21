@@ -12,6 +12,11 @@ on:
 
 permissions: {}
 
+# A tag push and a manual retry for the same release share one publication lane.
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   package:
     runs-on: ubuntu-latest
