@@ -6,6 +6,9 @@ root=$(cd "$(dirname "$0")/.." && pwd)
 scratch=$(mktemp -d)
 trap 'rm -rf "$scratch"' EXIT
 
+# Validate a native workflow read from the YAML file supplied as argument one.
+# Require distinct platform contexts and credential-free candidate execution.
+# Return zero only when the complete ownership boundary is preserved.
 check_validation() {
   yq -o=json '.' "$1" | jq -e '
     (.on | has("pull_request") and has("merge_group") and (has("workflow_call") | not)) and
