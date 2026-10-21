@@ -51,8 +51,11 @@ release tag using current `main` tooling before checking out its source. Both au
 runs require the tagged commit to belong to fetched `main` and contain the local publisher migration;
 historical tags predating that migration are explicitly rejected. The tag version passes through
 the SDK's `Version` property. Build and packaging have no publication credentials. A separate job
-downloads only prepared package artifacts, checks out no repository, and uses `NUGET_API_KEY` only
-for `dotnet nuget push`; it never builds source or receives a GitHub release-write token.
+downloads only prepared package artifacts, checks out no repository, and exchanges its OIDC identity
+through pinned `NuGet/login` for a temporary key used only by `dotnet nuget push`. Only that clean
+job has `id-token: write`; neither job receives a GitHub release-write token. Generated projects
+must register their NuGet trusted publishing policy for `publish.yaml` and set the `NUGET_USER`
+repository variable. The former long-lived `NUGET_API_KEY` secret is not used.
 The configuration is renamed during onboarding and owned by each generated project afterwards.
 `scripts/nuget-package.test.sh` builds actual stable/prerelease packages with pinned
 dotnet-releaser 0.24.0 and checks delivery bytes in a disposable local feed; it never publishes

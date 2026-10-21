@@ -28,11 +28,11 @@ check_publisher() {
     .permissions == {} and
     (.jobs.publish | has("uses") | not) and
     .jobs.package.permissions == {"contents":"read"} and
-    .jobs.publish.permissions == {} and
+    .jobs.publish.permissions == {"id-token":"write"} and
     .jobs.publish.needs == "package" and
     ([.jobs.package.steps[] | select(.uses? | strings | startswith("actions/checkout@"))] |
       length == 1 and .[0].with["persist-credentials"] == false and .[0].with.ref == "main") and
-    ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ secrets.NUGET_API_KEY }}")] | length) == 1 and
+    ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ steps.login.outputs.NUGET_API_KEY }}")] | length) == 1 and
     ([.jobs.publish.steps[] | select(.env.GITHUB_TOKEN? != null)] | length) == 0 and
     ([.jobs.package.steps[] | select(.run? | strings | contains("dotnet-releaser --version 0.24.0"))] | length) == 1 and
     ([.jobs.publish.steps[] | select(.uses? | strings | startswith("actions/setup-dotnet@"))] |

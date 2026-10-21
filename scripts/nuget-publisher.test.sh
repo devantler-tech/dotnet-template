@@ -10,13 +10,16 @@ yq -o=json '.' "$workflow" >"$scratch/workflow.json"
 jq -e '
   .jobs.package.permissions == {"contents":"read"} and
   .jobs.publish.needs == "package" and
-  .jobs.publish.permissions == {} and
-  ([.jobs.package.steps[].env // {} | keys[] | select(test("TOKEN|KEY"))] | length) == 0 and
+  .jobs.publish.permissions == {"id-token":"write"} and
+  ([.env // {}, .jobs.package.env // {}, .jobs.package.steps[].env // {}] |
+    tostring | contains("secrets.") | not) and
   ([.jobs.publish.steps[] | select(.uses? | strings | startswith("actions/checkout@"))] | length) == 0 and
   ([.jobs.publish.steps[] | select(.run?)] | length) == 1 and
-  ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ secrets.NUGET_API_KEY }}")] | length) == 1
+  ([.jobs.publish.steps[] | select(.uses? | strings | startswith("NuGet/login@"))] |
+    length == 1 and .[0].id == "login" and .[0].with.user == "${{ vars.NUGET_USER }}") and
+  ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ steps.login.outputs.NUGET_API_KEY }}")] | length) == 1
 ' "$scratch/workflow.json" >/dev/null || {
-  echo 'FAIL: package code and publishing credential must run in separate jobs' >&2
+  echo 'FAIL: package code must be isolated from short-lived publication credentials' >&2
   exit 1
 }
 jq -r '.jobs.publish.steps[] | select(.run?).run' "$scratch/workflow.json" >"$scratch/push.sh"

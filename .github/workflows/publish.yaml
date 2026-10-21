@@ -68,7 +68,8 @@ jobs:
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions: {} # No repository checkout or GitHub writes; push uses the NuGet key only.
+    permissions:
+      id-token: write # Exchange this job's identity for a short-lived NuGet publication key.
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
@@ -83,11 +84,16 @@ jobs:
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: '10.0.x' # Transport only; no source or project is loaded in this job.
+      - name: Obtain short-lived NuGet credential
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
       - name: Push prepared NuGet packages
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$NUGET_API_KEY" || { echo '::error::Configure NUGET_API_KEY before publishing'; exit 1; }
+          test -n "$NUGET_API_KEY" || { echo '::error::NuGet login did not issue a temporary key'; exit 1; }
           dotnet nuget push 'packages/*.nupkg' --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY"
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}

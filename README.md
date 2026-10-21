@@ -77,7 +77,7 @@ file falls into one of three ownership classes:
   identity and docs (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `LICENSE`, `CODEOWNERS`), and
   the configs you tailor (`.releaserc`, `.gitignore`, `dependabot.yaml`).
   Package configuration (`dotnet-releaser.toml`) is also instance-owned. The rename script
-  updates its project path; tailor your package identity and configure `NUGET_API_KEY` before
+  updates its project path; tailor your package identity and configure NuGet trusted publishing before
   publishing. GitHub release creation remains separate, so this NuGet publisher has no GitHub
   release-write permission. Build and packaging run without the publishing key; a separate runner
   receives only the prepared packages and pushes them to NuGet. Automatic and manual publication
@@ -103,6 +103,14 @@ Check that the proposed publisher still targets your library and that the two do
 files remain yours. New projects created from this template already include the ignore entries;
 their first rename updates the configuration path. Review future ownership changes in the
 consumer's ignore file too.
+
+**NuGet publishing setup:** register a trusted publishing policy in the package owner's NuGet
+account for your repository and workflow file `publish.yaml`, then set the repository variable
+`NUGET_USER` to that NuGet profile name. Follow [NuGet's trusted publishing guide](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+to scope the policy to your package publisher. The clean publication job exchanges its GitHub
+identity for a temporary key immediately before pushing. It does not use the former long-lived
+`NUGET_API_KEY` secret. Until the policy and username are configured, publication fails closed;
+ordinary local builds and tests need neither.
 
 The sync workflow no-ops in this template repository itself. In devantler-tech
 instances it works out of the box (the org provides the App credentials); an
