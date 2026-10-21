@@ -35,7 +35,10 @@ jobs:
       - name: 🤖 Validate agent instruction shims
         run: sh scripts/validate-agent-shims.test.sh
       - name: Validate repository-owned workflow contracts
-        run: bash scripts/workflow-ownership.test.sh
+        run: |
+          bash scripts/workflow-ownership.test.sh
+          bash scripts/nuget-release-source.test.sh
+          bash scripts/nuget-publisher.test.sh
       - name: 🧰 Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:

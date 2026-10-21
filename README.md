@@ -79,7 +79,11 @@ file falls into one of three ownership classes:
   Package configuration (`dotnet-releaser.toml`) is also instance-owned. The rename script
   updates its project path; tailor your package identity and configure `NUGET_API_KEY` before
   publishing. GitHub release creation remains separate, so this NuGet publisher has no GitHub
-  release-write permission. Manual recovery requires an existing release tag, not a branch name.
+  release-write permission. Build and packaging run without the publishing key; a separate runner
+  receives only the prepared packages and pushes them to NuGet. Automatic and manual publication
+  require an existing release tag whose commit belongs to `main` and includes the local publisher
+  migration. Earlier tags are rejected before source selection; create a new release from `main`
+  instead of using this workflow to republish a pre-migration tag.
 - **Scaffold-time-only** — the rename script and the template's own
   `validate-scaffold.yaml` gate arrive when the repo is created and are ignored
   by sync afterwards, so you can delete them and they stay gone.

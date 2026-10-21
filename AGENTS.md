@@ -47,12 +47,18 @@ CI **does** verify the scaffold: the local `run-dotnet-tests.yaml` builds and te
 
 **NuGet publication:** `dotnet-releaser.toml` targets the library only and explicitly disables
 GitHub publication, which stays owned by semantic-release. The publisher validates a `v`-prefixed
-release tag, checks out that tag for both automatic and manual runs, and passes its version through
-the SDK's `Version` property. It uses only `NUGET_API_KEY`, never a GitHub release-write token.
+release tag using current `main` tooling before checking out its source. Both automatic and manual
+runs require the tagged commit to belong to fetched `main` and contain the local publisher migration;
+historical tags predating that migration are explicitly rejected. The tag version passes through
+the SDK's `Version` property. Build and packaging have no publication credentials. A separate job
+downloads only prepared package artifacts, checks out no repository, and uses `NUGET_API_KEY` only
+for `dotnet nuget push`; it never builds source or receives a GitHub release-write token.
 The configuration is renamed during onboarding and owned by each generated project afterwards.
 `scripts/nuget-package.test.sh` builds actual stable/prerelease packages with pinned
 dotnet-releaser 0.24.0 and checks delivery bytes in a disposable local feed; it never publishes
-to NuGet.org. Supply `DOTNET_RELEASER_BIN` when running this check locally.
+to NuGet.org. Supply `DOTNET_RELEASER_BIN` when running this check locally. The source-eligibility and
+publisher boundary checks run with `bash scripts/nuget-release-source.test.sh` and
+`bash scripts/nuget-publisher.test.sh`; the scaffold gate runs both.
 
 ## Maintenance (autonomous AI assistant)
 

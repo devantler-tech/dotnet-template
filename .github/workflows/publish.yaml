@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to publish (for example v1.2.3)
+        description: Release tag on main created after the local publisher migration (for example v1.2.3)
         required: true
         type: string
   push:
@@ -13,10 +13,11 @@ on:
 permissions: {}
 
 jobs:
-  publish:
+  package:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
-      contents: read # Checkout only; NuGet uses its separately scoped API key.
+      contents: read # Fetch protected release history; this job has no publication key.
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
@@ -27,21 +28,66 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+          ref: main # Validate with current migration tooling before selecting the release source.
+      - name: Validate and select release source
+        id: release
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(bash scripts/nuget-release-version.sh "$RELEASE_TAG")
+          source=$(bash scripts/nuget-release-source.sh "$RELEASE_TAG")
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          git checkout --detach "$source"
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
       - name: Test the released source
         run: dotnet test --configuration Release
-      - name: Publish NuGet packages
+      - name: Build NuGet packages without publishing credentials
+        shell: bash
+        env:
+          Version: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.24.0
+          "$RUNNER_TEMP/dotnet-releaser/dotnet-releaser" build dotnet-releaser.toml
+      - name: Retain prepared packages
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuget-packages
+          path: |
+            artifacts-dotnet-releaser/*.nupkg
+            artifacts-dotnet-releaser/*.snupkg
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions: {} # No repository checkout or GitHub writes; push uses the NuGet key only.
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - name: Download prepared packages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages
+          path: packages
+      - name: Set up NuGet transport
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x' # Transport only; no source or project is loaded in this job.
+      - name: Push prepared NuGet packages
         shell: bash
         run: |
           set -euo pipefail
           test -n "$NUGET_API_KEY" || { echo '::error::Configure NUGET_API_KEY before publishing'; exit 1; }
-          version=$(bash scripts/nuget-release-version.sh "$RELEASE_TAG")
-          dotnet tool install --global dotnet-releaser --version 0.24.0
-          Version="$version" dotnet-releaser publish --nuget-token "$NUGET_API_KEY" dotnet-releaser.toml
+          dotnet nuget push 'packages/*.nupkg' --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY"
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
