@@ -130,6 +130,7 @@ subst "src/$new_name/FeatureFlags.cs"
 subst "tests/$new_name.Tests/$new_name.Tests.csproj"
 subst "tests/$new_name.Tests/${type_token}ClassTests.cs"
 subst "README.md"
+subst "dotnet-releaser.toml"
 
 echo "renamed $OLD -> $new_name across $changed file(s) (plus directory/file renames)."
 echo "next: review 'git diff', then 'dotnet build && dotnet test'."

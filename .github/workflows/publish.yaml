@@ -1,6 +1,11 @@
 name: Publish
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish (for example v1.2.3)
+        required: true
+        type: string
   push:
     tags:
       - 'v*'
@@ -11,8 +16,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # Read the tagged release source.
-      packages: write # Preserve the existing package publication contract.
+      contents: read # Checkout only; NuGet uses its separately scoped API key.
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
@@ -23,17 +27,21 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
       - name: Set up .NET
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
-          dotnet-version: |
-            9
-            10
-      - name: Publish
+          global-json-file: global.json
+      - name: Test the released source
+        run: dotnet test --configuration Release
+      - name: Publish NuGet packages
         shell: bash
         run: |
+          set -euo pipefail
+          test -n "$NUGET_API_KEY" || { echo '::error::Configure NUGET_API_KEY before publishing'; exit 1; }
+          version=$(bash scripts/nuget-release-version.sh "$RELEASE_TAG")
           dotnet tool install --global dotnet-releaser --version 0.24.0
-          dotnet-releaser run --nuget-token "${NUGET_API_KEY}" --github-token "${GITHUB_TOKEN}" dotnet-releaser.toml
+          Version="$version" dotnet-releaser publish --nuget-token "$NUGET_API_KEY" dotnet-releaser.toml
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}

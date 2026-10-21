@@ -42,3 +42,9 @@ jobs:
           global-json-file: global.json # track the scaffold's SDK floor
       - name: 🧱 Validate onboarding (rename-placeholders.sh)
         run: sh scripts/rename-placeholders.test.sh
+      - name: Verify real package creation and disposable local-feed delivery
+        env:
+          DOTNET_RELEASER_BIN: ${{ runner.temp }}/dotnet-releaser/dotnet-releaser
+        run: |
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.24.0
+          bash scripts/nuget-package.test.sh

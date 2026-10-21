@@ -27,11 +27,14 @@ check_publisher() {
     (.on | has("workflow_dispatch") and (.push.tags == ["v*"]) and (has("workflow_call") | not)) and
     .permissions == {} and
     (.jobs.publish | has("uses") | not) and
-    .jobs.publish.permissions == {"contents":"read", "packages":"write"} and
+    .jobs.publish.permissions == {"contents":"read"} and
     ([.jobs.publish.steps[] | select(.uses? | strings | startswith("actions/checkout@"))] |
       length == 1 and .[0].with["persist-credentials"] == false) and
-    ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ secrets.NUGET_API_KEY }}" and .env.GITHUB_TOKEN? == "${{ secrets.GITHUB_TOKEN }}")] | length) == 1 and
-    ([.jobs.publish.steps[] | select(.run? | strings | contains("dotnet tool install --global dotnet-releaser --version 0.24.0"))] | length) == 1
+    ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ secrets.NUGET_API_KEY }}")] | length) == 1 and
+    ([.jobs.publish.steps[] | select(.env.GITHUB_TOKEN? != null)] | length) == 0 and
+    ([.jobs.publish.steps[] | select(.run? | strings | contains("dotnet tool install --global dotnet-releaser --version 0.24.0"))] | length) == 1 and
+    ([.jobs.publish.steps[] | select(.uses? | strings | startswith("actions/setup-dotnet@"))] |
+      length == 1 and (.[0].uses | test("@[0-9a-f]{40}$")))
   ' >/dev/null
 }
 

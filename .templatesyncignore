@@ -30,6 +30,7 @@ LICENSE
 
 # --- Release / dependency config the instance tailors ---
 .releaserc
+dotnet-releaser.toml
 .gitignore
 .github/dependabot.yaml
 # Documentation scan scope and historical exceptions belong to each consumer.

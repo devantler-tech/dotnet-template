@@ -1,0 +1,9 @@
+# NuGet-only publication. GitHub releases remain owned by semantic-release.
+artifacts_folder = "artifacts-dotnet-releaser"
+
+[msbuild]
+project = "src/Example/Example.csproj"
+
+[github]
+publish = false
+version_prefix = "v"

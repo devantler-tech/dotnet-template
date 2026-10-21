@@ -15,7 +15,7 @@ to require it before merging.
 - **House defaults** — every project builds with `Nullable`, `ImplicitUsings`, `AnalysisMode=All`, `EnforceCodeStyleInBuild`, XML documentation generation, and `TreatWarningsAsErrors` enabled, so code-style and analyzer findings are build errors, not warnings. Editor and analyzer rules live in [`.editorconfig`](.editorconfig).
 - **Feature-flag ready** — a portable [OpenFeature](https://openfeature.dev/) scaffold ([`src/Example/FeatureFlags.cs`](src/Example/FeatureFlags.cs)) so new features land **behind a flag, default-off**, are tested in both states, and are switched on only after validation. Ships an in-memory provider (no backend needed); swap in flagd or another provider without touching call sites. See [`AGENTS.md`](AGENTS.md#feature-flags).
 - **CI/CD** — repository-owned [.NET validation](.github/workflows/run-dotnet-tests.yaml) builds and tests on Ubuntu, Windows and macOS for pull requests and the merge queue; [`ci.yaml`](.github/workflows/ci.yaml) also aggregates template-specific checks. Run `dotnet build` / `dotnet test` locally before a PR.
-- **Release and publishing configuration** — [semantic-release](https://github.com/semantic-release/semantic-release) uses eligible [Conventional Commits](https://www.conventionalcommits.org/) on `main` to decide whether to cut a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)). The [publish workflow](.github/workflows/publish.yaml) is configured to publish the library to NuGet on those tags; App credentials and a NuGet publishing key are maintainer setup, not local-build prerequisites. These workflow definitions alone do not prove that your package is published.
+- **Release and publishing configuration** — [semantic-release](https://github.com/semantic-release/semantic-release) uses eligible [Conventional Commits](https://www.conventionalcommits.org/) on `main` to decide whether to cut a `v*` tag and GitHub release ([`release.yaml`](.github/workflows/release.yaml)). The local [publish workflow](.github/workflows/publish.yaml) tests that tagged source and publishes version-matched NuGet packages using [the supplied configuration](dotnet-releaser.toml). App credentials and a NuGet publishing key are maintainer setup, not local-build prerequisites. These workflow definitions alone do not prove that your package is published.
 - **Dependency management** — [Dependabot](https://docs.github.com/code-security/dependabot) keeps dependencies and pinned GitHub Actions current.
 - **Agent-ready** — [`AGENTS.md`](AGENTS.md) conventions and a `.claude/skills/maintain` card so the autonomous Agentic Engineer (and any agentic tool) can maintain the repo.
 
@@ -76,6 +76,10 @@ file falls into one of three ownership classes:
   `<TargetFramework>` must move in lockstep, so the whole upgrade is yours),
   identity and docs (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `LICENSE`, `CODEOWNERS`), and
   the configs you tailor (`.releaserc`, `.gitignore`, `dependabot.yaml`).
+  Package configuration (`dotnet-releaser.toml`) is also instance-owned. The rename script
+  updates its project path; tailor your package identity and configure `NUGET_API_KEY` before
+  publishing. GitHub release creation remains separate, so this NuGet publisher has no GitHub
+  release-write permission. Manual recovery requires an existing release tag, not a branch name.
 - **Scaffold-time-only** — the rename script and the template's own
   `validate-scaffold.yaml` gate arrive when the repo is created and are ignored
   by sync afterwards, so you can delete them and they stay gone.
