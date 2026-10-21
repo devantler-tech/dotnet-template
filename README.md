@@ -119,7 +119,11 @@ instance elsewhere is off by default — opt in by supplying your own GitHub App
 `APP_PRIVATE_KEY` secret, its client ID as the `APP_CLIENT_ID` repository
 variable, and set the repository variable `TEMPLATE_SYNC_ENABLED=true`.
 The local .NET validation workflow runs in generated projects without an organization-injected
-workflow. Branch protection is separate: require its successful result in your repository.
+workflow. Branch protection is separate: require `.NET template tests (ubuntu-latest)`,
+`.NET template tests (windows-latest)`, `.NET template tests (macos-latest)` and
+`CI - Required Checks` in your repository's ruleset or branch protection. The aggregate covers
+the retired-link validation check; it does not replace the three .NET results. Generated repositories
+do not inherit this template's ruleset, and local build/test needs no publishing credentials.
 If you tailor a workflow rather than maintaining it through this template, add its path to
 your `.templatesyncignore` so later syncs preserve your version.
 
