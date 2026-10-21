@@ -43,7 +43,14 @@ New features land **behind a flag, default-off**, are tested in **both** states,
 
 CI **does** verify the scaffold: the local `run-dotnet-tests.yaml` builds and tests across Ubuntu, Windows and macOS, using the shared pinned .NET action. It is an ordinary workflow, not a single-consumer reusable export, and generated projects receive it too. Publication is likewise a local job in `publish.yaml`; generic release and template-sync workflows remain shared.
 
-**Protected-source cutover (#534):** the existing organization rule still requires the centralized .NET workflow during overlap. Do not remove that source or its protection until the declarative rule points at this repository's reviewed `main` and live enforcement is verified. The local PR-triggered matrix runs alongside it during this bounded migration. `ci.yaml` aggregates the retired-link documentation check, not the .NET gate. Generated projects must configure their own branch protection; copying a workflow does not copy a ruleset.
+**Validation ownership cutover (#534):** the existing organization rule still requires the
+centralized .NET workflow during overlap. The local matrix uses distinct `.NET template tests
+(<runner>)` check names so an old organization-injected `test (<runner>)` result cannot satisfy
+the new repository-scoped rule accidentally. Retire the old rule only after the repository rule
+is live and native positive/refusal controls pass. `ci.yaml` aggregates the retired-link
+documentation check, not the .NET gate. Generated projects must configure their own branch
+protection; copying a workflow does not copy a ruleset. A producer binding is not immutable
+workflow-source authentication.
 
 **NuGet publication:** `dotnet-releaser.toml` targets the library only and explicitly disables
 GitHub publication, which stays owned by semantic-release. The publisher validates a `v`-prefixed

@@ -10,6 +10,7 @@ check_validation() {
   yq -o=json '.' "$1" | jq -e '
     (.on | has("pull_request") and has("merge_group") and (has("workflow_call") | not)) and
     .permissions == {} and
+    .jobs.test.name == ".NET template tests (${{ matrix.os }})" and
     (.jobs.test.strategy.matrix.os | sort) == ["macos-latest", "ubuntu-latest", "windows-latest"] and
     .jobs.test.permissions == {"contents":"read"} and
     ([.jobs.test.steps[] | select(.uses? | strings | startswith("actions/checkout@"))] |
@@ -55,7 +56,10 @@ check_publisher "$root/.github/workflows/publish.yaml" || {
 for preparation in '.' '.jobs.test.steps = [{"name":"Additional preparation", "run":"true"}] + .jobs.test.steps'; do
   yq "$preparation" "$root/.github/workflows/run-dotnet-tests.yaml" >"$scratch/validation-base.yaml"
   check_validation "$scratch/validation-base.yaml"
+  # shellcheck disable=SC2016 # GitHub expressions in the mutations remain literal.
   for mutation in \
+    'del(.jobs.test.name)' \
+    '.jobs.test.name = "test (${{ matrix.os }})"' \
     'del(.jobs.test.strategy.matrix.os[2])' \
     '.jobs.test.permissions.contents = "write"' \
     '(.jobs.test.steps[] | select(.uses | test("^devantler-tech/\\.github/actions/run-dotnet-tests@"))).with."github-token" = "credential-fixture"' \
