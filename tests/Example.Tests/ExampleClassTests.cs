@@ -25,7 +25,7 @@ public class ExampleClassTests
   public void NativeAdmissionControl_ValidChange_Passes()
   {
     int result = ExampleClass.Add(1, 1);
-    Assert.Equal(2, result);
+    Assert.Equal(3, result);
   }
 
   /// <summary>
