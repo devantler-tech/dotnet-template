@@ -84,13 +84,21 @@ file falls into one of three ownership classes:
   `validate-scaffold.yaml` gate arrive when the repo is created and are ignored
   by sync afterwards, so you can delete them and they stay gone.
 
-**Existing projects need a one-time documentation migration.** The sync action
-does not propagate updates to `.templatesyncignore` itself. Before the sync runs,
-add the literal line `CONTRIBUTING.md` to your project's own ignore file and
-commit it. If a sync PR is already open, restore your tailored guide and commit
-the ignore entry before merging that PR: adding an ignore entry does not undo
-changes already proposed. New projects created from the updated template already
-include that entry. Review future ownership changes in the consumer's ignore file too.
+**Existing projects need a one-time migration before accepting these workflow updates.**
+The sync action does not propagate updates to `.templatesyncignore` itself. Add and commit
+the literal lines `CONTRIBUTING.md` and `dotnet-releaser.toml` in your project's own ignore file.
+Keep your tailored contribution guide, and create or update your own publication configuration
+before syncing the new publisher: copy the supplied configuration, then change its `project`
+to your existing library's actual path. Do not rerun the scaffold rename script in an established
+project. For example, a library already renamed to `Widget` uses
+`project = "src/Widget/Widget.csproj"`.
+
+If a sync PR is already open, restore your tailored guide and configuration and commit the
+ignore entries before merging it: adding an ignore entry does not undo changes already proposed.
+Check that the proposed publisher still targets your library and that the two documentation/config
+files remain yours. New projects created from this template already include the ignore entries;
+their first rename updates the configuration path. Review future ownership changes in the
+consumer's ignore file too.
 
 The sync workflow no-ops in this template repository itself. In devantler-tech
 instances it works out of the box (the org provides the App credentials); an
