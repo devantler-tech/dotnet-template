@@ -88,6 +88,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ✅ Aggregate job checks
-        uses: devantler-tech/.github/actions/aggregate-job-checks@b03d137ac25ef4299d4bc4ebee08928e1e57708e # v13.3.5
+        uses: devantler-tech/.github/actions/aggregate-job-checks@0b137510d139bbf62e479d9610b0db17c972bc2b # v14.0.2
         with:
           job-results: ${{ needs.validate-retired-links.result }}
