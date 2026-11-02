@@ -86,8 +86,11 @@ jobs:
     needs: [validate-retired-links]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
     steps:
       - name: ✅ Aggregate job checks
         uses: devantler-tech/.github/actions/aggregate-job-checks@902f47bac89e916db4e025500457131c50f38d98 # v19.0.9
         with:
           job-results: ${{ needs.validate-retired-links.result }}
+          check-workflow-startup: "true"
