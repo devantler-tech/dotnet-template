@@ -90,7 +90,7 @@ jobs:
       actions: read
     steps:
       - name: ✅ Aggregate job checks
-        uses: devantler-tech/.github/actions/aggregate-job-checks@f5e89883c54c9bfade7f0d20a569ce5573b19cca # v20.1.16
+        uses: devantler-tech/.github/actions/aggregate-job-checks@9ba573406426900207a3b5afeebe16f2d89ca751 # v20.1.18
         with:
           job-results: ${{ needs.validate-retired-links.result }}
           check-workflow-startup: "true"
