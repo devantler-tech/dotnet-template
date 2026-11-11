@@ -17,7 +17,7 @@ the ignore entry before merging it; the entry does not undo changes already prop
 ## Make a first upstream change
 
 You need Git, the .NET SDK selected by [global.json](global.json), and network access for public
-NuGet restore. The current floor is SDK 10.0.300 with `latestFeature` roll-forward within 10.0.x;
+NuGet restore. The current floor is SDK 11.0.100 with `latestFeature` roll-forward within 11.0.x;
 check `dotnet --version` from the checkout's root. A .NET runtime alone is insufficient.
 Use a POSIX shell for the scaffold tests. No publishing key, GitHub App secret, cluster or
 production infrastructure is needed for this local path.

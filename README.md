@@ -19,9 +19,9 @@ to require it before merging.
 - **Dependency management** — [Dependabot](https://docs.github.com/code-security/dependabot) keeps dependencies and pinned GitHub Actions current.
 - **Agent-ready** — [`AGENTS.md`](AGENTS.md) conventions and a `.claude/skills/maintain` card so the autonomous Agentic Engineer (and any agentic tool) can maintain the repo.
 
-The target framework is declared in the project files — currently `net10.0` in [`src/Example/Example.csproj`](src/Example/Example.csproj).
-The SDK selection is separate: [global.json](global.json) requires the .NET 10 SDK at feature band
-10.0.300 or later within 10.0.x (`latestFeature` roll-forward), not just the .NET runtime.
+The target framework is declared in the project files — currently `net11.0` in [`src/Example/Example.csproj`](src/Example/Example.csproj).
+The SDK selection is separate: [global.json](global.json) requires the .NET 11 SDK at feature band
+11.0.100 or later within 11.0.x (`latestFeature` roll-forward), not just the .NET runtime.
 
 ## 🚀 Use this template
 
