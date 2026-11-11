@@ -57,7 +57,7 @@ jobs:
           Version: ${{ steps.release.outputs.version }}
         run: |
           set -euo pipefail
-          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.24.0
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.25.0
           "$RUNNER_TEMP/dotnet-releaser/dotnet-releaser" build dotnet-releaser.toml
       - name: Retain prepared packages
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

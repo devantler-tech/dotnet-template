@@ -65,7 +65,7 @@ must register their NuGet trusted publishing policy for `publish.yaml` and set t
 repository variable. The former long-lived `NUGET_API_KEY` secret is not used.
 The configuration is renamed during onboarding and owned by each generated project afterwards.
 `scripts/nuget-package.test.sh` builds actual stable/prerelease packages with pinned
-dotnet-releaser 0.24.0 and checks delivery bytes in a disposable local feed; it never publishes
+dotnet-releaser 0.25.0 and checks delivery bytes in a disposable local feed; it never publishes
 to NuGet.org. Supply `DOTNET_RELEASER_BIN` when running this check locally. The source-eligibility and
 publisher boundary checks run with `bash scripts/nuget-release-source.test.sh` and
 `bash scripts/nuget-publisher.test.sh`; the scaffold gate runs both.
