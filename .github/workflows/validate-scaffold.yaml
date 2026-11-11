@@ -49,5 +49,5 @@ jobs:
         env:
           DOTNET_RELEASER_BIN: ${{ runner.temp }}/dotnet-releaser/dotnet-releaser
         run: |
-          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.24.0
+          dotnet tool install --tool-path "$RUNNER_TEMP/dotnet-releaser" dotnet-releaser --version 0.25.0
           bash scripts/nuget-package.test.sh

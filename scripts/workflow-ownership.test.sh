@@ -39,7 +39,7 @@ check_publisher() {
       length == 1 and .[0].with["persist-credentials"] == false and .[0].with.ref == "main") and
     ([.jobs.publish.steps[] | select(.env.NUGET_API_KEY? == "${{ steps.login.outputs.NUGET_API_KEY }}")] | length) == 1 and
     ([.jobs.publish.steps[] | select(.env.GITHUB_TOKEN? != null)] | length) == 0 and
-    ([.jobs.package.steps[] | select(.run? | strings | contains("dotnet-releaser --version 0.24.0"))] | length) == 1 and
+    ([.jobs.package.steps[] | select(.run? | strings | contains("dotnet-releaser --version 0.25.0"))] | length) == 1 and
     ([.jobs.publish.steps[] | select(.uses? | strings | startswith("actions/setup-dotnet@"))] |
       length == 1 and (.[0].uses | test("@[0-9a-f]{40}$")))
   ' >/dev/null
