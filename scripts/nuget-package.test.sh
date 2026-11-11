@@ -19,7 +19,10 @@ for version in 1.2.3 2.0.0-rc.1; do
   mkdir -p "$fixture"
   git -C "$root" archive HEAD -- src global.json | tar -x -C "$fixture"
   cp "$root/dotnet-releaser.toml" "$fixture/dotnet-releaser.toml"
-  (cd "$fixture"; Version="$version" "$releaser" build dotnet-releaser.toml)
+  # dotnet-releaser is built for .NET 10. On its own runtime it reads the build log with the
+  # .NET 10 MSBuild and aborts on records the .NET 11 SDK writes, so run it on the newest
+  # installed runtime, where it loads the MSBuild of the SDK that global.json selects.
+  (cd "$fixture"; Version="$version" DOTNET_ROLL_FORWARD=LatestMajor "$releaser" build dotnet-releaser.toml)
   package="$fixture/artifacts-dotnet-releaser/Example.$version.nupkg"
   [[ -f "$package" ]] || { echo 'FAIL: packing produced no version-bound library package' >&2; exit 1; }
   unzip -p "$package" Example.nuspec >"$scratch/package.nuspec"
