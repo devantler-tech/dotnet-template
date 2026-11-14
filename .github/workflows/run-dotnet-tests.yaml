@@ -25,7 +25,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Test .NET solution or project
-        uses: devantler-tech/.github/actions/run-dotnet-tests@e3015cf665fceff0645bcc61bdec271693e7f54a # v21.3.2
+        uses: devantler-tech/.github/actions/run-dotnet-tests@b0ee12726310db2df9494a7cf6f59f8006cdb5c6 # v21.3.5
         with:
           # Both PRs and merge groups execute proposed code. Public scaffold
           # dependencies need no authenticated restore or coverage-upload token.
